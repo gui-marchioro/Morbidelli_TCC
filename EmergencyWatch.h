@@ -13,6 +13,8 @@
 
 #define EMERGENCY_STATE_VAR 183
 
+#define WATCHDOG_DELAY 5.0 // seconds after host stops to Trigger
+
 // Monitor emergency safety variables
 // If one or more of them are true, signalizes and set the emergency state
 // If none of them are true, resets the emergency state
@@ -28,6 +30,10 @@ int WatchInputLowLogic(int input, char *message);
 
 // Receives a number of input to verify and a message to be shown if the input is true.
 int WatchInputHighLogic(int input, char *message);
+
+void ServiceWatchdogStatus(void);
+void WatchdogTripped(void);
+void WatchdogOK(void);
 
 // Sign that the emergency is raised to serve as a condition for other programs.
 // Ex. not execute Init before clear emergency

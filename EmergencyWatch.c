@@ -1,4 +1,5 @@
 #include "EmergencyWatch.h"
+#include "Drill.c"
 #include "KMotionDef.h"
 
 #ifndef TMP
@@ -34,10 +35,18 @@ void InitialEmergencyMonitoring()
 // If none of them are true, resets the emergency state
 void LoopEmergencyMonitoring()
 {
+    if (GetEmergencyState() == 1)
+    {
+        return;
+    }
+
+    ServiceWatchdogStatus();
+
     if ((WatchInputHighLogic(THERMAL_PROTECTION_PIN, "Thermal protection warning active") == 1) ||
         (WatchInputLowLogic(GENERAL_EMERGENCY_PIN, "General emergency active") == 1) ||
         (WatchInputLowLogic(HAS_PRESSURE_PIN, "The pressure is low than required") == 1))
     {
+        ClearDrillOutputs();
         MDI("M5");
         SetEmergencyState();
     }
@@ -69,6 +78,48 @@ int WatchInputHighLogic(int input, char *message)
     }
     
     return 0;
+}
+
+// Watchdog Trips after all host applications stop requesting status
+// Watchdog OK is called when communication and status requests Resume
+
+void ServiceWatchdogStatus(void)
+{
+	static int Alive=FALSE;
+	static int PrevStatusRequestCounter=-1;
+	static double WatchdogTime=0;
+	double T=Time_sec();
+	
+	// check if Host is requesting Status
+	if (StatusRequestCounter != PrevStatusRequestCounter)
+	{
+		// yes, save time 
+		WatchdogTime = T + WATCHDOG_DELAY;
+		PrevStatusRequestCounter=StatusRequestCounter;
+		if (!Alive) WatchdogOK();
+		Alive=TRUE;
+	}
+	else
+	{
+		if (T > WatchdogTime)  // time to trigger?
+		{
+			if (Alive) WatchdogTripped();
+			Alive=FALSE; 
+		}
+	}
+}
+
+void WatchdogOK(void)
+{
+	
+}
+
+void WatchdogTripped(void)
+{
+	ClearDrillOutputs();
+    MDI("M5");
+    SetEmergencyState();
+    MsgBox("DESCONEXÃO", MB_ICONEXCLAMATION);
 }
 
 // Sign that the emergency is raised to serve as a condition for other programs.
