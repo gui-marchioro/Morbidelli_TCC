@@ -1,0 +1,5 @@
+# ignore all files ended in .out
+*.out
+
+# ignore all files ended in .json
+*.json
