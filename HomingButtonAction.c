@@ -1,5 +1,5 @@
-#include "InitConfig.h"
-#include "Homing.h"
+#include "InitConfig.c"
+#include "Homing.c"
 #include "KMotionDef.h"
 
 #ifndef TMP

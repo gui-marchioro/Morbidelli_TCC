@@ -1,8 +1,8 @@
-#include "InitConfig.h"
-#include "MPGWatch.h"
-#include "EmergencyWatch.h"
-#include "ManualToolExchangeWatch.h"
-#include "Homing.h"
+#include "InitConfig.c"
+#include "MPGWatch.c"
+#include "EmergencyWatch.c"
+#include "ManualToolExchangeWatch.c"
+#include "Homing.c"
 #include "KMotionDef.h"
 
 // Initialization program that runs when the Init button is pressed inside KMotionCNC

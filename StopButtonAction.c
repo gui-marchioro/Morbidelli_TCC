@@ -1,5 +1,6 @@
-#include "InitConfig.h"
-#include "Homing.h"
+#include "InitConfig.c"
+#include "Homing.c"
+#include "Drill.c"
 #include "KMotionDef.h"
 
 #ifndef TMP
@@ -11,6 +12,8 @@
 // DoPC(PC_COMM_ESTOP);
 void main()
 {
+    ClearDrillOutputs();
+    MDI("M5");
     ClearBit(ENABLE_ALL_AXIS_PIN);
     ResetHomingExecuted();
     ResetInitExecuted();
