@@ -1,5 +1,5 @@
-#include "Homing.h"
-#include "InitConfig.h"
+#include "Homing.c"
+#include "InitConfig.c"
 #include "KMotionDef.h"
 
 #define TMP 10 // which spare persist to use to transfer data
