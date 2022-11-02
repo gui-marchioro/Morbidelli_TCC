@@ -200,22 +200,13 @@ int LoadNewTool(int newTool)
         return 1;
     }
 
-	// - Approach tool holder by matching Z + safe height of tool flange currently in spindle with tool holder                            claw
-	if (MoveZ(ToolPositionZ() + 5.0, SLOW_SPEED))
-    {
-        return 1;
-    }
-
-    // Activate piston actuators to approach tool in z axis.
-    EnablePistons();
-
-    ClearBit(SPHERE_GRIPPER_OUTPUT);
-    ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
-
     if (MoveZ(ToolPositionZ(), SLOW_SPEED))
     {
         return 1;
     }
+    
+    // Activate piston actuators to approach tool in z axis.
+    EnablePistons();
 
     // - Grab tool
 	if (GrabTool())
@@ -324,8 +315,6 @@ void EnablePistons()
 {
     SetBit(PISTONS_ENABLE_OUTPUT);
     SetBit(PISTONL_ENABLE_OUTPUT);
-    SetBit(PISTON_TOOL_OUTPUT);
-
     Delay_sec(2.0);
 }
 
@@ -334,8 +323,6 @@ void DisablePistons()
 {
     ClearBit(PISTONS_ENABLE_OUTPUT);
     ClearBit(PISTONL_ENABLE_OUTPUT);
-    ClearBit(PISTON_TOOL_OUTPUT);
-
     Delay_sec(2.0);
 }
 
@@ -343,8 +330,15 @@ void DisablePistons()
 // return 0 = success, 1 if sensor points that the tool is still grabbed.
 int EjectTool()
 {
+    SetBit(SPHERE_GRIPPER_OUTPUT);
+    Delay_sec(1.0);
+    SetBit(OPEN_TOOL_GRIPPER_OUTPUT);
+    Delay_sec(0.5);
+    SetBit(EXTRACT_OUTPUT);
+    Delay_sec(1.0);
+    SetBit(PISTON_TOOL_OUTPUT);
+    Delay_sec(2.0);
     ClearBit(SPHERE_GRIPPER_OUTPUT);
-    ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
 
     // - Wait for time in seconds defined by CLAMP_TIME
 	Delay_sec(1.0);
@@ -359,6 +353,13 @@ int EjectTool()
 		MsgBox("Claw Loose Error\n", MB_ICONHAND | MB_OK);
 		return 1;
 	}
+  
+    ClearBit(PISTON_TOOL_OUTPUT);
+    Delay_sec(2.0);
+    ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
+    Delay_sec(1.0);
+    ClearBit(EXTRACT_OUTPUT);
+    Delay_sec(1.0);
 
     return 0; // success
 }
@@ -367,8 +368,16 @@ int EjectTool()
 // return 0 = success, 1 if sensor points that the tool is not grabbed.
 int GrabTool()
 {
-    SetrBit(SPHERE_GRIPPER_OUTPUT);
     SetBit(OPEN_TOOL_GRIPPER_OUTPUT);
+    SetBit(PISTON_TOOL_OUTPUT);
+    Delay_sec(2.0);
+    SetBit(SPHERE_GRIPPER_OUTPUT);
+    Delay_sec(0.5);
+    ClearBit(PISTON_TOOL_OUTPUT);
+    Delay_sec(2.0);
+    ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
+    Delay_sec(0.5);
+    ClearBit(SPHERE_GRIPPER_OUTPUT);
 
     // - Wait for time in seconds defined by CLAMP_TIME
 	Delay_sec(1.0);
