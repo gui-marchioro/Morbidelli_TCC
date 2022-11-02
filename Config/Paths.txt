@@ -1,0 +1,11 @@
+GCodeConfigCNC
+Default.tbl
+emc.var
+emc_UV.var
+C:\KMotion434\KMotion\Data
+
+Screen
+C:\KMotion434\PC VC Examples\KMotionCNC\Screens
+
+resources
+C:\KMotion434\PC VC Examples\KMotionCNC\res
