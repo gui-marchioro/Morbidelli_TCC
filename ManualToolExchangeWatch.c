@@ -37,6 +37,9 @@ int Debounce(int n, int *cnt, int *last, int *lastsolid)
 	return v;
 }
 
+#define PREVIOUS_TOOL_VAR 191
+#define TOOL_DISK_FILE "c:\\Kmotion434\\KMotion\\Data\\ToolChangerData.txt"
+
 // Routine that monitors the inputs related to the manual tool exchange and runs the machine state
 // that opens the gripper and the extractor
 void ManualToolExchangeWatch(void)
@@ -96,6 +99,22 @@ void ManualToolExchangeWatch(void)
                 ClearBit(EXTRACT_OUTPUT);
                 ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
                 states = InitialState;
+
+                float value;
+                int Answer = InputBox("Tool in Spindle or -1",&value);
+                if (Answer)
+                {
+                    printf("Operator Canceled\n");
+                    return 1;
+                }
+                else
+                {
+                    persist.UserData[PREVIOUS_TOOL_VAR]=value;
+                    FILE *f=fopen(TOOL_DISK_FILE,"wt");
+                    fprintf(f,"%d\n",value);
+                    fclose(f);
+                    printf("Operator Entered Value of %d\n",value);
+                }
             }
             break;
 
