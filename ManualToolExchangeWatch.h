@@ -1,10 +1,6 @@
 #ifndef ManualToolExchangeWatch_h
 #define ManualToolExchangeWatch_h
 
-// Outputs to be controled for manual tool exchange
-#define EXTRACT_OUTPUT 1066
-#define OPEN_TOOL_GRIPPER_OUTPUT 1067
-
 // Inputs to be monitored for manual tool exchange
 #define EXCHANGE_TOOL_BUTTON_INPUT 1050
 

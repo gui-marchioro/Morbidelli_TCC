@@ -1,4 +1,5 @@
 #include "ManualToolExchangeWatch.h"
+#include "MillChangerDefs.h"
 #include "KMotionDef.h"
 
 // Posible states for the tool exchange cycle
