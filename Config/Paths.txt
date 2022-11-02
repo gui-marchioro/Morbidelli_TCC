@@ -1,11 +1,16 @@
+C:\KMotion434\KMotion\Data
+// Tool setup config for KMotionCNC
 GCodeConfigCNC
+// Tool table configuration for KMotionCNC
 Default.tbl
+// Fixture offset table configuration for KMotionCNC
 emc.var
 emc_UV.var
-C:\KMotion434\KMotion\Data
+// Last tool in use to be used within M6 command.
+ToolChangerData
 
-Screen
 C:\KMotion434\PC VC Examples\KMotionCNC\Screens
+Screen
 
-resources
 C:\KMotion434\PC VC Examples\KMotionCNC\res
+resources
