@@ -10,15 +10,18 @@ void Homing()
     ResetIsExecutingHoming();
 }
 
-// Home one desired axis
+// Home one desired axis. It reaches the sensor, reverse the movement applying less velocity,
+// and zero when the sensor ends the reading
 void HomeAxis(int Axis, int HomePin, int Vel, double Position)
 {
 	// Home Axis - jog until it sees the limit
 
     Jog(Axis, Vel);  			// jog slowly negative
     while (!ReadBit(HomePin)) ;  	// loop until IO bit goes high
-    Jog(Axis,0);				// stop
-    while (!CheckDone(Axis)) ; // loop until motion completes 
+    Jog(Axis,-Vel/10);
+    while (ReadBit(HomePin)) ;  	// loop until IO bit goes high
+    Jog(Axis,0);
+    while (!CheckDone(Axis)) ; // loop until motion completes
 	DisableAxis(Axis);			// disable the axis
     Zero(Axis);				// Zero the position
 	EnableAxis(Axis);			// re-enable the ServoTick
