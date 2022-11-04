@@ -1,5 +1,6 @@
 #include "Drill.c"
 #include "MillChanger.c"
+#include "Spindle.c"
 #include "KMotionDef.h"
 
 #ifndef TMP

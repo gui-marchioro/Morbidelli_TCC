@@ -47,6 +47,8 @@ void ManualToolExchangeWatch(void)
 {
     static enum toolExchangeStates states = InitialState; // Initializes the state machine
     static int blast=0,blastsolid=-1,bcount=0; // initialize the button state variables for switch debouncing
+    static float value;
+    static int Answer, tool;
 
     static double T0=0.0;  // remember the last time we turned on
     double T=Time_sec(); // get current Time_sec
@@ -55,8 +57,8 @@ void ManualToolExchangeWatch(void)
     // If not, clear the states machine and low the outputs
     if ((JOB_ACTIVE == 1) || (GetIsExecutingHoming() == 1))
     {
-        ClearBit(EXTRACT_OUTPUT);
-        ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
+        //ClearBit(EXTRACT_OUTPUT); // commented because it generates a race condition while M6 command was executing
+        //ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
         states = InitialState;
         return;
     }
@@ -101,8 +103,8 @@ void ManualToolExchangeWatch(void)
                 ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
                 states = InitialState;
 
-                float value;
-                int Answer = InputBox("Tool in Spindle or -1",&value);
+                Answer = InputBox("Tool in Spindle or -1",&value);
+                tool = value;
                 if (Answer)
                 {
                     printf("Operator Canceled\n");
@@ -110,11 +112,11 @@ void ManualToolExchangeWatch(void)
                 }
                 else
                 {
-                    persist.UserData[PREVIOUS_TOOL_VAR]=value;
+                    persist.UserData[PREVIOUS_TOOL_VAR]=tool;
                     FILE *f=fopen(TOOL_DISK_FILE,"wt");
-                    fprintf(f,"%d\n",value);
+                    fprintf(f,"%d\n",tool);
                     fclose(f);
-                    printf("Operator Entered Value of %d\n",value);
+                    printf("Operator Entered Value of %d\n",tool);
                 }
             }
             break;

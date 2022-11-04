@@ -52,7 +52,7 @@ int MillExchangeRoutine(int millSlot)
 void OpenMagazine()
 {
     SetBit(OPEN_MAGAZINE_OUTPUT);
-    Delay_sec(2.0);
+    Delay_sec(4.0);
     ClearBit(OPEN_MAGAZINE_OUTPUT);
 }
 
@@ -60,7 +60,7 @@ void OpenMagazine()
 void CloseMagazine()
 {
     SetBit(CLOSE_MAGAZINE_OUTPUT);
-    Delay_sec(2.0);
+    Delay_sec(4.0);
     ClearBit(CLOSE_MAGAZINE_OUTPUT);
 }
 
@@ -234,7 +234,7 @@ float ToolPositionX(int tool)
         xOffset = 120.0;
     }
 
-    float xPosition = 23.6 + OFFSET_X + xOffset;
+    float xPosition = 7.5 + OFFSET_X + xOffset;
     return xPosition;
 }
 
@@ -256,14 +256,14 @@ float ToolPositionY(int tool)
         yOffset = 160*1;
     }
 
-    float yPosition = -876.2 + OFFSET_Y + yOffset;
+    float yPosition = -868.3 + OFFSET_Y + yOffset;
     return yPosition;
 }
 
 // Return z position of tool holder in mm.
 float ToolPositionZ()
 {
-    float zPosition = 3.15 + OFFSET_Z;
+    float zPosition = 7 + OFFSET_Z;
     return zPosition;
 }
 
@@ -271,8 +271,8 @@ float ToolPositionZ()
 // return 0 = success, 1 if axis disabled
 int MoveXY(float x, float y, float Speed)
 {
-	MoveAtVel(X_AXIS, x / FACTOR_X, Speed * FACTOR_X);
-	MoveAtVel(Y_AXIS, y / FACTOR_Y, Speed * FACTOR_Y);
+	MoveAtVel(X_AXIS, x / FACTOR_X, Speed / FACTOR_X);
+	MoveAtVel(Y_AXIS, y / FACTOR_Y, Speed / FACTOR_Y);
 	
 	while (!CheckDone(X_AXIS) || !CheckDone(Y_AXIS))
 	{
@@ -336,6 +336,7 @@ int EjectTool()
     Delay_sec(0.5);
     SetBit(EXTRACT_OUTPUT);
     Delay_sec(1.0);
+    ClearBit(EXTRACT_OUTPUT);
     SetBit(PISTON_TOOL_OUTPUT);
     Delay_sec(2.0);
     ClearBit(SPHERE_GRIPPER_OUTPUT);
@@ -358,8 +359,6 @@ int EjectTool()
     Delay_sec(2.0);
     ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
     Delay_sec(1.0);
-    ClearBit(EXTRACT_OUTPUT);
-    Delay_sec(1.0);
 
     return 0; // success
 }
@@ -376,7 +375,7 @@ int GrabTool()
     ClearBit(PISTON_TOOL_OUTPUT);
     Delay_sec(2.0);
     ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
-    Delay_sec(0.5);
+    Delay_sec(1.0);
     ClearBit(SPHERE_GRIPPER_OUTPUT);
 
     // - Wait for time in seconds defined by CLAMP_TIME

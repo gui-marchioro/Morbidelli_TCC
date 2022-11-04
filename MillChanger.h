@@ -35,7 +35,7 @@
 #define OFFSET_Y -20
 #define OFFSET_Z -7.5
 
-#define SLOW_SPEED 2 // mm/sec
+#define SLOW_SPEED 40 // mm/sec
 
 // Routine responsible for exchange mill tool.
 // Return 0=Success, 1=Failure
