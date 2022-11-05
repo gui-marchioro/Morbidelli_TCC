@@ -23,4 +23,6 @@ void SetSpindleStatus(int Status);
 
 int GetSpindleStatus();
 
+void StopSpindle();
+
 #endif /* Spindle_h */

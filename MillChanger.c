@@ -165,8 +165,19 @@ int UnloadTool(int currentTool)
         return 1;
     }
 
+    if (!JOB_ACTIVE)
+    {
+        return 1;  // if Job was terminated/halt exit - return error.
+    }
+
     // Activate piston actuators to approach tool in z axis.
     EnablePistons();
+
+    if (!JOB_ACTIVE)
+    {
+        DisablePistons();
+        return 1;  // if Job was terminated/halt exit - return error.
+    }
 
     // - Eject tool
 	if (EjectTool())
@@ -174,7 +185,17 @@ int UnloadTool(int currentTool)
         return 1;
     }
 
+    if (!JOB_ACTIVE)
+    {
+        return 1;  // if Job was terminated/halt exit - return error.
+    }
+
     DisablePistons();
+
+    if (!JOB_ACTIVE)
+    {
+        return 1;  // if Job was terminated/halt exit - return error.
+    }
 
     // - Rapid to Z Home
 	if (MoveZ(0.0, SLOW_SPEED))
@@ -204,17 +225,39 @@ int LoadNewTool(int newTool)
     {
         return 1;
     }
+
+    if (!JOB_ACTIVE)
+    {
+        return 1;  // if Job was terminated/halt exit - return error.
+    }
     
     // Activate piston actuators to approach tool in z axis.
     EnablePistons();
+
+    if (!JOB_ACTIVE)
+    {
+        DisablePistons();
+        return 1;  // if Job was terminated/halt exit - return error.
+    }
 
     // - Grab tool
 	if (GrabTool())
     {
         return 1;
     }
+
+    if (!JOB_ACTIVE)
+    {
+        return 1;  // if Job was terminated/halt exit - return error.
+    }
     
     DisablePistons();
+
+    if (!JOB_ACTIVE)
+    {
+        return 1;  // if Job was terminated/halt exit - return error.
+    }
+
     // - Rapid to Z Home
 	if (MoveZ(0.0, SLOW_SPEED))
     {
@@ -282,6 +325,7 @@ int MoveXY(float x, float y, float Speed)
 			MsgBox("Error X Axis Disabled\n", MB_ICONHAND | MB_OK);
 			return 1;
 		}
+
 		if (!chan[Y_AXIS].Enable)
 		{
 			printf("Error Y Axis Disabled\n");

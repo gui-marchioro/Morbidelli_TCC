@@ -3,6 +3,7 @@
 #include "EmergencyWatch.c"
 #include "ManualToolExchangeWatch.c"
 #include "Homing.c"
+#include "Spindle.c"
 #include "KMotionDef.h"
 
 // Initialization program that runs when the Init button is pressed inside KMotionCNC

@@ -23,7 +23,7 @@ void main ()
     // Turn off spindle if on.
     if (GetSpindleStatus() != SPINDLE_OFF)
     {
-        MDI("M5");
+        StopSpindle();
     }
 
     if(slot >= MILL_TOOL_SLOT_MIN && slot <= MILL_TOOL_SLOT_MAX)

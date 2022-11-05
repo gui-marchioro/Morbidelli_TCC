@@ -1,6 +1,7 @@
 #include "InitConfig.c"
 #include "Homing.c"
 #include "Drill.c"
+#include "Spindle.c"
 #include "KMotionDef.h"
 
 #ifndef TMP
@@ -13,7 +14,7 @@
 void main()
 {
     ClearDrillOutputs();
-    MDI("M5");
+    StopSpindle();
     ClearBit(ENABLE_ALL_AXIS_PIN);
     ResetHomingExecuted();
     ResetInitExecuted();

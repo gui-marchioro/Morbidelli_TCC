@@ -1,5 +1,6 @@
 #include "EmergencyWatch.h"
 #include "Drill.c"
+//#include "Spindle.c"
 #include "KMotionDef.h"
 
 #ifndef TMP
@@ -46,9 +47,9 @@ void LoopEmergencyMonitoring()
         (WatchInputLowLogic(GENERAL_EMERGENCY_PIN, "General emergency active") == 1) ||
         (WatchInputLowLogic(HAS_PRESSURE_PIN, "The pressure is low than required") == 1))
     {
-        ClearDrillOutputs();
-        MDI("M5");
         SetEmergencyState();
+        ClearDrillOutputs();
+        StopSpindle();
     }
     else
     {
@@ -116,10 +117,9 @@ void WatchdogOK(void)
 
 void WatchdogTripped(void)
 {
-	ClearDrillOutputs();
-    MDI("M5");
     SetEmergencyState();
-    MsgBox("DESCONEXÃO", MB_ICONEXCLAMATION);
+	ClearDrillOutputs();
+    StopSpindle();
 }
 
 // Sign that the emergency is raised to serve as a condition for other programs.

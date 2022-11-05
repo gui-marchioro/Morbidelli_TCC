@@ -1,5 +1,6 @@
 #include "MPGWatch.h"
 #include "KMotionDef.h"
+//#include "Spindle.c"
 
 int isXSelected = 0;
 int isYSelected = 0;
@@ -112,7 +113,7 @@ void BasicServiceMPG(void)
     {
         DoPC(PC_COMM_HALT);
         Delay_sec(0.6);
-        MDI("M5");
+        StopSpindle();
         Delay_sec(0.6);
         DoPC(PC_COMM_RESTART);
     }
