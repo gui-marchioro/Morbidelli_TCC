@@ -17,5 +17,6 @@ void main()
     StopSpindle();
     ClearBit(ENABLE_ALL_AXIS_PIN);
     ResetHomingExecuted();
+    ResetIsExecutingHoming();
     ResetInitExecuted();
 }
