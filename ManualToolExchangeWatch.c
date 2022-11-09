@@ -39,7 +39,25 @@ int Debounce(int n, int *cnt, int *last, int *lastsolid)
 }
 
 #define PREVIOUS_TOOL_VAR 191
+#define PREVIOUS_TOOL_LABEL_VAR 192
 #define TOOL_DISK_FILE "c:\\Kmotion434\\KMotion\\Data\\ToolChangerData.txt"
+
+// check if Current Tool number Valid
+// -1 = no tool loaded
+// 1-10 = valid tool
+BOOL ToolNumberValid(int tool)
+{
+	return tool == -1 || (tool>=1 && tool<=10);
+}
+
+void UpdateCurrentToolLabel(int currentTool)
+{
+    char s[80];
+    // Now compute and form result
+	sprintf(s,"%d",currentTool);
+    // Put it onto the Screen
+	DROLabel(1000, PREVIOUS_TOOL_LABEL_VAR, s);
+}
 
 // Routine that monitors the inputs related to the manual tool exchange and runs the machine state
 // that opens the gripper and the extractor
@@ -110,12 +128,21 @@ void ManualToolExchangeWatch(void)
                     printf("Operator Canceled\n");
                     return 1;
                 }
+                else if (!ToolNumberValid(tool))  // check if invalid
+                {
+                    char s[80];
+                    sprintf(s,"Invalid Current Tool Number %d\n",tool);
+                    printf(s);
+                    MsgBox(s, MB_ICONHAND | MB_OK);
+                    return 1;
+                }
                 else
                 {
                     persist.UserData[PREVIOUS_TOOL_VAR]=tool;
                     FILE *f=fopen(TOOL_DISK_FILE,"wt");
                     fprintf(f,"%d\n",tool);
                     fclose(f);
+                    UpdateCurrentToolLabel(tool);
                     printf("Operator Entered Value of %d\n",tool);
                 }
             }
