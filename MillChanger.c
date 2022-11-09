@@ -52,7 +52,8 @@ int MillExchangeRoutine(int millSlot)
 void OpenMagazine()
 {
     SetBit(OPEN_MAGAZINE_OUTPUT);
-    Delay_sec(4.0);
+    while(!ReadBit(MAGAZINE_OPENED_INPUT));
+    //Delay_sec(4);
     ClearBit(OPEN_MAGAZINE_OUTPUT);
 }
 
@@ -60,7 +61,8 @@ void OpenMagazine()
 void CloseMagazine()
 {
     SetBit(CLOSE_MAGAZINE_OUTPUT);
-    Delay_sec(4.0);
+    while(!ReadBit(MAGAZINE_CLOSED_INPUT));
+    //Delay_sec(4);
     ClearBit(CLOSE_MAGAZINE_OUTPUT);
 }
 
@@ -71,7 +73,17 @@ void SaveCurrentTool(int millSlot)
 	FILE *f=fopen(TOOL_DISK_FILE,"wt");
 	fprintf(f,"%d\n", millSlot);
 	fclose(f);
+    UpdateCurrentToolLabel(millSlot);
 	return 0;
+}
+
+void UpdateCurrentToolLabel(int currentTool)
+{
+    char s[80];
+    // Now compute and form result
+	sprintf(s,"%d",currentTool);
+    // Put it onto the Screen
+	DROLabel(1000, PREVIOUS_TOOL_LABEL_VAR, s);
 }
 
 // Get the last loaded tool.  Parameter points to where to return tool
@@ -167,6 +179,7 @@ int UnloadTool(int currentTool)
 
     if (!JOB_ACTIVE)
     {
+        ClearStopImmediately(); // Clear Stop Condition without resuming
         return 1;  // if Job was terminated/halt exit - return error.
     }
 
@@ -176,6 +189,7 @@ int UnloadTool(int currentTool)
     if (!JOB_ACTIVE)
     {
         DisablePistons();
+        ClearStopImmediately(); // Clear Stop Condition without resuming
         return 1;  // if Job was terminated/halt exit - return error.
     }
 
@@ -187,6 +201,7 @@ int UnloadTool(int currentTool)
 
     if (!JOB_ACTIVE)
     {
+        ClearStopImmediately(); // Clear Stop Condition without resuming
         return 1;  // if Job was terminated/halt exit - return error.
     }
 
@@ -194,6 +209,7 @@ int UnloadTool(int currentTool)
 
     if (!JOB_ACTIVE)
     {
+        ClearStopImmediately(); // Clear Stop Condition without resuming
         return 1;  // if Job was terminated/halt exit - return error.
     }
 
@@ -228,6 +244,7 @@ int LoadNewTool(int newTool)
 
     if (!JOB_ACTIVE)
     {
+        ClearStopImmediately(); // Clear Stop Condition without resuming
         return 1;  // if Job was terminated/halt exit - return error.
     }
     
@@ -236,6 +253,7 @@ int LoadNewTool(int newTool)
 
     if (!JOB_ACTIVE)
     {
+        ClearStopImmediately(); // Clear Stop Condition without resuming
         DisablePistons();
         return 1;  // if Job was terminated/halt exit - return error.
     }
@@ -248,6 +266,7 @@ int LoadNewTool(int newTool)
 
     if (!JOB_ACTIVE)
     {
+        ClearStopImmediately(); // Clear Stop Condition without resuming
         return 1;  // if Job was terminated/halt exit - return error.
     }
     
@@ -255,6 +274,7 @@ int LoadNewTool(int newTool)
 
     if (!JOB_ACTIVE)
     {
+        ClearStopImmediately(); // Clear Stop Condition without resuming
         return 1;  // if Job was terminated/halt exit - return error.
     }
 
@@ -277,7 +297,7 @@ float ToolPositionX(int tool)
         xOffset = 120.0;
     }
 
-    float xPosition = 7.5 + OFFSET_X + xOffset;
+    float xPosition = -12.5 + OFFSET_X + xOffset;
     return xPosition;
 }
 
@@ -398,6 +418,8 @@ int EjectTool()
 		MsgBox("Claw Loose Error\n", MB_ICONHAND | MB_OK);
 		return 1;
 	}
+
+    SaveCurrentTool(-1);
   
     ClearBit(PISTON_TOOL_OUTPUT);
     Delay_sec(2.0);

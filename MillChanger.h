@@ -2,6 +2,7 @@
 #define MillChanger_h
 
 #define PREVIOUS_TOOL_VAR 191
+#define PREVIOUS_TOOL_LABEL_VAR 192
 #define TOOL_DISK_FILE "c:\\Kmotion434\\KMotion\\Data\\ToolChangerData.txt"
 
 #define MILL_TOOL_SLOT_MIN 1
@@ -35,7 +36,7 @@
 #define OFFSET_Y -20
 #define OFFSET_Z -7.5
 
-#define SLOW_SPEED 40 // mm/sec
+#define SLOW_SPEED 60 // mm/sec
 
 // Routine responsible for exchange mill tool.
 // Return 0=Success, 1=Failure
