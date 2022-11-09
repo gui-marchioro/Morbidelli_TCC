@@ -13,9 +13,14 @@ main()
 	if (GetInitExecuted() == 0)
 	{
 		MsgBox("Execute the Init function before Home", MB_ICONEXCLAMATION);
+		return;
 	}
-	else
+	
+	if (GetIsExecutingHoming() == 1 || JOB_ACTIVE)
 	{
-		Homing();
+		return;
 	}
+
+	// If everything Ok, execute homing
+	Homing();
 }

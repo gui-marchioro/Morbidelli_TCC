@@ -4,6 +4,7 @@
 #include "ManualToolExchangeWatch.c"
 #include "Homing.c"
 #include "Spindle.c"
+#include "MillChanger.c"
 #include "KMotionDef.h"
 
 // Initialization program that runs when the Init button is pressed inside KMotionCNC
@@ -16,20 +17,23 @@ main()
     if (GetEmergencyState() == 1)
 	{
 		MsgBox("Solve the emergency problem before Initialize", MB_ICONEXCLAMATION);
+        return;
 	}
-    // Initializes, monitor MPG and Emergency variables
-    else
-    {
-        InitConfig();
-        WaitNextTimeSlice();
 
-        for(;;)
-        {
-            ManualToolExchangeWatch();
-            BasicServiceMPG();
-            LoopEmergencyMonitoring();
-            
-            WaitNextTimeSlice();
-        }
+    // Initializes KFlop and Kanalog board
+    InitConfig();
+    // Updates current milling tool in use
+    int currentTool;
+    GetCurrentTool(&currentTool);
+
+    // monitor external buttons, MPG and Emergency variables
+    for(;;)
+    {
+        ManualToolExchangeWatch();
+        BasicServiceMPG();
+        LoopEmergencyMonitoring();
+        
+        WaitNextTimeSlice();
     }
+    
 }

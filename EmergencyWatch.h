@@ -13,7 +13,7 @@
 
 #define EMERGENCY_STATE_VAR 183
 
-#define WATCHDOG_DELAY 1.0 // seconds after host stops to Trigger
+#define WATCHDOG_DELAY 5.0 // seconds after host stops to Trigger
 
 // Monitor emergency safety variables
 // If one or more of them are true, signalizes and set the emergency state
