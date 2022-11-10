@@ -5,6 +5,7 @@
 #include "Homing.c"
 #include "Spindle.c"
 #include "MillChanger.c"
+#include "TableSelectionWatch.c"
 #include "KMotionDef.h"
 
 // Initialization program that runs when the Init button is pressed inside KMotionCNC
@@ -32,6 +33,8 @@ main()
         ManualToolExchangeWatch();
         BasicServiceMPG();
         LoopEmergencyMonitoring();
+        Table1SelectionWatch();
+        Table2SelectionWatch();
         
         WaitNextTimeSlice();
     }
