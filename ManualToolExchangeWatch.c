@@ -92,6 +92,7 @@ void ManualToolExchangeWatch(void)
                 SetBit(OPEN_TOOL_GRIPPER_OUTPUT);
                 T0=T;  // set start time of cycle
                 states = GripperOpenState;
+                printf("Going to GripperOpenState. ManualToolExchangeWatch.\n");
             }
             // Keep InitialState, all outputs disabled
             break;
@@ -103,6 +104,7 @@ void ManualToolExchangeWatch(void)
                     T0 = 0.0;
                     SetBit(EXTRACT_OUTPUT);
                     states = ExtractorOnState;
+                    printf("Going to ExtractorOnState. ManualToolExchangeWatch.\n");
                 }
             }
             // Go back to InitialState, switch off outputs
@@ -111,6 +113,7 @@ void ManualToolExchangeWatch(void)
                 T0 = 0.0;
                 ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
                 states = InitialState;
+                printf("Going to InitialState. ManualToolExchangeWatch.\n");
             }
             break;
 
@@ -120,6 +123,7 @@ void ManualToolExchangeWatch(void)
                 ClearBit(EXTRACT_OUTPUT);
                 ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
                 states = InitialState;
+                printf("Going to InitialState. ManualToolExchangeWatch.\n");
 
                 Answer = InputBox("Tool in Spindle or -1",&value);
                 tool = value;

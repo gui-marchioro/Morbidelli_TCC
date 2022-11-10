@@ -26,10 +26,12 @@ int MillExchangeRoutine(int millSlot)
 		return 1;
 	}
 
+    printf("Open Magazine. MillChanger.\n");
     OpenMagazine();
 	
 	if (currentTool != -1) // is there a tool in the Spindle??
     {
+        printf("Unload tool. MillChanger.\n");
         if (UnloadTool(currentTool)) // yes, unload it
         {
             return 1;
@@ -37,11 +39,13 @@ int MillExchangeRoutine(int millSlot)
     }
 		
 	// Now Spindle is empty, load requested tool
+    printf("Load new tool. MillChanger.\n");
 	if (LoadNewTool(millSlot))
     {
         return 1;
     }
 
+    printf("Close Magazine. MillChanger.\n");
     CloseMagazine();
 	
 	SaveCurrentTool(millSlot);  // save the one that has been loaded
@@ -326,7 +330,7 @@ float ToolPositionY(int tool)
 // Return z position of tool holder in mm.
 float ToolPositionZ()
 {
-    float zPosition = 7 + OFFSET_Z;
+    float zPosition = -10 + OFFSET_Z;
     return zPosition;
 }
 

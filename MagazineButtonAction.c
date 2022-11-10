@@ -19,10 +19,12 @@ main()
 
     if (ReadBit(MAGAZINE_CLOSED_INPUT))
     {
+        printf("Open Magazine request. MagazineButtonAction.\n");
         OpenMagazine();
     }
     else
     {
+        printf("Close Magazine request. MagazineButtonAction.\n");
         CloseMagazine();
     }
 }
