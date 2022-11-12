@@ -308,7 +308,7 @@ float ToolPositionX(int tool)
         xOffset = 120.0;
     }
 
-    float xPosition = -12.5 + OFFSET_X + xOffset;
+    float xPosition = -13.5 + OFFSET_X + xOffset;
 
     return xPosition;
 }

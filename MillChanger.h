@@ -1,10 +1,6 @@
 #ifndef MillChanger_h
 #define MillChanger_h
 
-#define PREVIOUS_TOOL_VAR 191
-#define PREVIOUS_TOOL_LABEL_VAR 192
-#define TOOL_DISK_FILE "c:\\Kmotion434\\KMotion\\Data\\ToolChangerData.txt"
-
 #define MILL_TOOL_SLOT_MIN 1
 #define MILL_TOOL_SLOT_MAX 10
 #define TOOL_PRESENT_INPUT 1049

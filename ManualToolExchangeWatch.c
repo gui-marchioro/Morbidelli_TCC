@@ -38,10 +38,6 @@ int Debounce(int n, int *cnt, int *last, int *lastsolid)
 	return v;
 }
 
-#define PREVIOUS_TOOL_VAR 191
-#define PREVIOUS_TOOL_LABEL_VAR 192
-#define TOOL_DISK_FILE "c:\\Kmotion434\\KMotion\\Data\\ToolChangerData.txt"
-
 // check if Current Tool number Valid
 // -1 = no tool loaded
 // 1-10 = valid tool
