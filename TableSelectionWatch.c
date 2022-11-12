@@ -1,6 +1,7 @@
 //#include "Homing.c"
 //#include "InitConfig.c"
-#include "MillChanger.h"
+#include "MovementDefs.h"
+#include "TableSelectionWatch.h"
 #include "KMotionDef.h"
 
 #ifndef TMP
@@ -8,42 +9,35 @@
 #include "KflopToKMotionCNCFunctions.c"
 #endif
 
-#define TABLE_EXECUTING_VAR 193
-#define TABLE1_EXECUTING_VAR 194
-#define TABLE2_EXECUTING_VAR 195
-
-// Inputs to be monitored for manual tool exchange
-#define TABLE1_BUTTON_INPUT 1100
-#define TABLE2_BUTTON_INPUT 1101
-#define VACUUM1_BUTTON_INPUT 1103
-#define VACUUM2_BUTTON_INPUT 1105
-#define VACUUM1_CONFIRMATION_INPUT 1107
-#define VACUUM2_CONFIRMATION_INPUT 1108
-
-// Outputs to be controled for tool exchange
-#define AUXILIARY_POSITIONING1_OUTPUT 1070
-#define AUXILIARY_POSITIONING2_OUTPUT 1071
-#define VACUUM1_OUTPUT 48//1134
-#define VACUUM2_OUTPUT 49//1135
-
 // Posible states for the table selection
 enum tableSelectionStates
 {
     InitialState,
     TableSelected,
     ReadyToExecute,
-    GoingToOrigin,
-    ProgramExecution
+    SafeZBegin,
+    GoingToParkingBegin,
+    ProgramExecution,
+    SafeZEnd,
+    GoingToParkingEnd
 };
 
 int tableExecuting = 0;
 
-// Move Axis XY at specified Speed and wait until complete
+// Move Axis X at specified Speed
 // return 0 = success, 1 if axis disabled
-int MoveXY(float x, float y, float Speed)
+int MoveX(float x, float Speed)
 {
 	MoveAtVel(X_AXIS, x / FACTOR_X, Speed / FACTOR_X);
-	MoveAtVel(Y_AXIS, y / FACTOR_Y, Speed / FACTOR_Y);
+	
+	return 0;  //success
+}
+
+// Move Axis Z at specified Speed
+// return 0 = success, 1 if axis disabled
+int MoveZ(float z, float Speed)
+{
+	MoveAtVel(Z_AXIS, z / FACTOR_Z, Speed / FACTOR_Z);
 	
 	return 0;  //success
 }
@@ -126,10 +120,33 @@ Table1SelectionWatch()
     case ReadyToExecute:
         if (!JOB_ACTIVE && tableExecuting == 0)
         {
-            MDI("G55");
-            DoPC(PC_COMM_EXECUTE);
             persist.UserData[TABLE_EXECUTING_VAR] = 1;
             persist.UserData[TABLE1_EXECUTING_VAR] = 1;
+            MoveZ(0, 10);
+            states = SafeZBegin;
+            printf("Going to SafeZBegin1. TableSelectionWatch.\n");
+        }
+
+        break;
+
+    case SafeZBegin:
+        if(CheckDone(Z_AXIS))
+        {
+            MoveX(0, 60);
+            states = GoingToParkingBegin;
+            printf("Going to GoingToParkingBegin1. TableSelectionWatch.\n");
+        }
+
+        break;
+
+    case GoingToParkingBegin:
+        if(CheckDone(X_AXIS))
+        {
+            MDI("G54");
+            //Invert X axis
+            ch0->InputGain0=1;
+            ch0->OutputGain=1;
+            DoPC(PC_COMM_EXECUTE);
             states = ProgramExecution;
             printf("Going to ProgramExecution1. TableSelectionWatch.\n");
         }
@@ -137,11 +154,36 @@ Table1SelectionWatch()
         break;
 
     case ProgramExecution:
-        if (!JOB_ACTIVE && persist.UserData[TABLE1_EXECUTING_VAR] == 0)
+        if (!JOB_ACTIVE &&  persist.UserData[TABLE1_EXECUTING_VAR] == 0)
         {
+            MoveZ(0, 10);
+            states = SafeZEnd;
+            printf("Going to SafeZEnd1. TableSelectionWatch.\n");
+        }
+
+        break;
+
+    case SafeZEnd:
+        if(CheckDone(Z_AXIS))
+        {
+            MoveX(0, 60);
+            states = GoingToParkingEnd;
+            printf("Going to GoingToParkingEnd1. TableSelectionWatch.\n");
+        }
+
+        break;
+
+    case GoingToParkingEnd:
+        if(CheckDone(X_AXIS))
+        {
+            MDI("G54");
+            // Fix X direction
+            ch0->InputGain0=-1;
+            ch0->OutputGain=-1;
             ClearBit(VACUUM1_OUTPUT);
-            states = InitialState;
+            RestoreOffsetX();
             printf("Going to InitialState1. TableSelectionWatch.\n");
+            states = InitialState;
             persist.UserData[TABLE_EXECUTING_VAR] = 0;
         }
 
@@ -203,37 +245,42 @@ Table2SelectionWatch()
         {
             persist.UserData[TABLE_EXECUTING_VAR] = 2;
             persist.UserData[TABLE2_EXECUTING_VAR] = 1;
-            MoveXY(3020,0,60);
-            states = GoingToOrigin;
-            printf("Going to GoingToOrigin2. TableSelectionWatch.\n");
+            MoveZ(0, 10);
+            states = SafeZBegin;
+            printf("Going to SafeZBegin2. TableSelectionWatch.\n");
         }
 
         break;
 
-    case GoingToOrigin:
-        if(CheckDone(X_AXIS) && CheckDone(Y_AXIS))
+    case SafeZBegin:
+        if(CheckDone(Z_AXIS))
         {
-            MDI("G56");
-            ch0->InputGain0=1;
-            ch0->OutputGain=1;
+            MDI("G54");
             DoPC(PC_COMM_EXECUTE);
             states = ProgramExecution;
             printf("Going to ProgramExecution2. TableSelectionWatch.\n");
         }
+
         break;
 
     case ProgramExecution:
-        if (!JOB_ACTIVE &&  persist.UserData[TABLE2_EXECUTING_VAR] == 0)
+        if (!JOB_ACTIVE && persist.UserData[TABLE2_EXECUTING_VAR] == 0)
         {
-            MDI("G55");
-            ch0->InputGain0=-1;
-            ch0->OutputGain=-1;
-            ClearBit(VACUUM2_OUTPUT);
-            printf("Going to InitialState2. TableSelectionWatch.\n");
-            states = InitialState;
-            persist.UserData[TABLE_EXECUTING_VAR] = 0;
+            MoveZ(0, 10);
+            states = SafeZEnd;
+            printf("Going to SafeZEnd2. TableSelectionWatch.\n");
         }
 
+        break;
+
+    case SafeZEnd:
+        if(CheckDone(Z_AXIS))
+        {
+            ClearBit(VACUUM2_OUTPUT);
+            states = InitialState;
+            printf("Going to InitialState2. TableSelectionWatch.\n");
+            persist.UserData[TABLE_EXECUTING_VAR] = 0;
+        }
         break;
 
     default:
@@ -242,25 +289,116 @@ Table2SelectionWatch()
     }
 }
 
-/* if (GetInitExecuted() == 0 || GetHomingExecuted() == 0 || GetIsExecutingHoming() == 1)
+Table1And2SelectionWatch()
 {
-    HaltAndWarn("Execute the Init and Homing function before run a program");
-    return;
-}
-else if (ReadBit(MAGAZINE_OPENED_INPUT))
-{
-    HaltAndWarn("Close the tool magazine before run a program");
-    return;
-}
-else if (JOB_ACTIVE)
-{
-    return;
-}
+    static enum tableSelectionStates states = InitialState; // Initializes the state machine
+    static int tableButtonChangeState1=-1,tlast1=0,tlastsolid1=-1,tcount1=0; // initialize the table selection button state variables for switch debouncing
+    static int tableButtonChangeState2=-1,tlast2=0,tlastsolid2=-1,tcount2=0; // initialize the table selection button state variables for switch debouncing
+    static int vacuumButtonChangeState1=-1,vlast1=0,vlastsolid1=-1,vcount1=0; // initialize the vacuum button state variables for switch debouncing
+    static int vacuumButtonChangeState2=-1,vlast2=0,vlastsolid2=-1,vcount2=0; // initialize the vacuum button state variables for switch debouncing
 
-void HaltAndWarn(char *message)
-{
-    DoPC(PC_COMM_HALT);
-    MsgBox(message, MB_ICONEXCLAMATION);
-    DoPC(PC_COMM_RESTART);
-} */
+    tableExecuting = persist.UserData[TABLE_EXECUTING_VAR];
 
+    tableButtonChangeState1 = Debounce(ReadBit(TABLE12_BUTTON_INPUT_1),&tcount1,&tlast1,&tlastsolid1);
+    int tableButtonState1 = tlast1;
+    tableButtonChangeState2 = Debounce(ReadBit(TABLE12_BUTTON_INPUT_2),&tcount2,&tlast2,&tlastsolid2);
+    int tableButtonState2 = tlast2;
+
+    vacuumButtonChangeState1 = Debounce(ReadBit(VACUUM12_BUTTON_INPUT_1),&vcount1,&vlast1,&vlastsolid1);
+    int vacuumButtonState1 = vlast1;
+    vacuumButtonChangeState2 = Debounce(ReadBit(VACUUM12_BUTTON_INPUT_2),&vcount2,&vlast2,&vlastsolid2);
+    int vacuumButtonState2 = vlast2;
+
+    switch (states)
+    {
+    case InitialState:
+        if (tableButtonChangeState1 == 1 || tableButtonChangeState2 == 1)
+        {
+            SetBit(AUXILIARY_POSITIONING1_OUTPUT);
+            SetBit(AUXILIARY_POSITIONING2_OUTPUT);
+            states = TableSelected;
+            printf("Going to Table12Selected. TableSelectionWatch.\n");
+        }
+
+        break;
+    
+    case TableSelected:
+        if (vacuumButtonChangeState1 == 1 || vacuumButtonChangeState2 == 1)
+        {
+            if (ReadBit(VACUUM1_OUTPUT) == 0 || ReadBit(VACUUM2_OUTPUT) == 0)
+            {
+                SetBit(VACUUM1_OUTPUT);
+                SetBit(VACUUM2_OUTPUT);
+            }
+            else
+            {
+                ClearBit(VACUUM1_OUTPUT);
+                ClearBit(VACUUM2_OUTPUT);
+            }
+        }
+
+        if((tableButtonState1 == 1 || tableButtonChangeState2 == 1) && ReadBit(VACUUM1_CONFIRMATION_INPUT) && ReadBit(VACUUM2_CONFIRMATION_INPUT) && tableExecuting == 0)
+        {
+            ClearBit(AUXILIARY_POSITIONING1_OUTPUT);
+            ClearBit(AUXILIARY_POSITIONING2_OUTPUT);
+            states = ReadyToExecute;
+            printf("Going to ReadyToExecute12. TableSelectionWatch.\n");
+        }
+        
+        break;
+    
+    case ReadyToExecute:
+        if (!JOB_ACTIVE && tableExecuting == 0)
+        {
+            persist.UserData[TABLE_EXECUTING_VAR] = 12;
+            persist.UserData[TABLE12_EXECUTING_VAR] = 1;
+            MoveZ(0, 10);
+            states = SafeZBegin;
+            printf("Going to SafeZBegin12. TableSelectionWatch.\n");
+        }
+
+        if (tableExecuting != 0)
+        {
+            states = InitialState;
+            printf("Going to InitialState12. TableSelectionWatch.\n");
+        }
+
+        break;
+
+    case SafeZBegin:
+        if(CheckDone(Z_AXIS))
+        {
+            MDI("G54");
+            DoPC(PC_COMM_EXECUTE);
+            states = ProgramExecution;
+            printf("Going to ProgramExecution12. TableSelectionWatch.\n");
+        }
+
+        break;
+
+    case ProgramExecution:
+        if (!JOB_ACTIVE && persist.UserData[TABLE12_EXECUTING_VAR] == 0)
+        {
+            MoveZ(0, 10);
+            states = SafeZEnd;
+            printf("Going to SafeZEnd12. TableSelectionWatch.\n");
+        }
+
+        break;
+
+    case SafeZEnd:
+        if(CheckDone(Z_AXIS))
+        {
+            ClearBit(VACUUM1_OUTPUT);
+            ClearBit(VACUUM2_OUTPUT);
+            states = InitialState;
+            printf("Going to InitialState12. TableSelectionWatch.\n");
+            persist.UserData[TABLE_EXECUTING_VAR] = 0;
+        }
+        break;
+
+    default:
+        states = InitialState;
+        break;
+    }
+}

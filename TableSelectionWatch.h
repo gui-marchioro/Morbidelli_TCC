@@ -1,0 +1,27 @@
+#ifndef TableSelectionWatch_h
+#define TableSelectionWatch_h
+
+#define TABLE_EXECUTING_VAR 196
+#define TABLE1_EXECUTING_VAR 197
+#define TABLE2_EXECUTING_VAR 198
+#define TABLE12_EXECUTING_VAR 199
+
+// Inputs to be monitored for manual tool exchange
+#define TABLE1_BUTTON_INPUT 1102
+#define TABLE2_BUTTON_INPUT 1099
+#define TABLE12_BUTTON_INPUT_1 1100
+#define TABLE12_BUTTON_INPUT_2 1101
+#define VACUUM1_BUTTON_INPUT 1103
+#define VACUUM2_BUTTON_INPUT 1106
+#define VACUUM12_BUTTON_INPUT_1 1104
+#define VACUUM12_BUTTON_INPUT_2 1105
+#define VACUUM1_CONFIRMATION_INPUT 1107
+#define VACUUM2_CONFIRMATION_INPUT 1108
+
+// Outputs to be controled for tool exchange
+#define AUXILIARY_POSITIONING1_OUTPUT 1070
+#define AUXILIARY_POSITIONING2_OUTPUT 1071
+#define VACUUM1_OUTPUT 48//1134
+#define VACUUM2_OUTPUT 49//1135
+
+#endif /* TableSelectionWatch_h */

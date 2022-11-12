@@ -1,6 +1,8 @@
 #ifndef Drill_h
 #define Drill_h
 
+#define PREVIOUS_DRILL_VAR 193
+
 #define DRILL_BOX_SLOT_MIN 11
 #define DRILL_BOX_SLOT_MAX 31
 
@@ -48,6 +50,28 @@
 #define DRILL_19_PISTON_OUTPUT 
 #define DRILL_20_PISTON_OUTPUT 
 #define DRILL_21_PISTON_OUTPUT */
+
+#define DRILL_1_OFFSET_X 0.0
+#define DRILL_2_OFFSET_X -160.0
+#define DRILL_3_OFFSET_X -140.0
+#define DRILL_4_OFFSET_X -120.0
+#define DRILL_5_OFFSET_X -100.0
+#define DRILL_6_OFFSET_X -120.0
+#define DRILL_7_OFFSET_X -120.0
+#define DRILL_8_OFFSET_X -120.0
+#define DRILL_9_OFFSET_X -120.0
+#define DRILL_10_OFFSET_X -120.0
+/* #define DRILL_11_OFFSET_X 0.0
+#define DRILL_12_OFFSET_X 0.0
+#define DRILL_13_OFFSET_X 0.0
+#define DRILL_14_OFFSET_X 0.0
+#define DRILL_15_OFFSET_X 0.0
+#define DRILL_16_OFFSET_X 0.0
+#define DRILL_17_OFFSET_X 0.0
+#define DRILL_18_OFFSET_X 0.0
+#define DRILL_19_OFFSET_X 0.0
+#define DRILL_20_OFFSET_X 0.0
+#define DRILL_21_OFFSET_X 0.0 */
 
 // Clear all outputs related to the drill operation
 void ClearDrillOutputs();

@@ -35,6 +35,7 @@ main()
         LoopEmergencyMonitoring();
         Table1SelectionWatch();
         Table2SelectionWatch();
+        Table1And2SelectionWatch();
         
         WaitNextTimeSlice();
     }

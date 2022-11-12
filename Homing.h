@@ -4,9 +4,6 @@
 #define X_HOME_INPUT_PIN 136
 #define Y_HOME_INPUT_PIN 137
 #define Z_HOME_INPUT_PIN 138
-#define X_AXIS 0
-#define Y_AXIS 1
-#define Z_AXIS 2
 #define HOMING_EXECUTED_VAR 181
 #define HOMING_EXECUTING_VAR 182
 

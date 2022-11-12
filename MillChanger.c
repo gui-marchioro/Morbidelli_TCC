@@ -1,6 +1,8 @@
 #include "MillChanger.h"
 #include "MillChangerDefs.h"
+#include "MovementDefs.h"
 #include "Spindle.h"
+#include "TableSelectionWatch.h"
 #include "KMotionDef.h"
 
 // Routine responsible for exchange mill tool.
@@ -25,6 +27,12 @@ int MillExchangeRoutine(int millSlot)
 		MsgBox(s, MB_ICONHAND | MB_OK);
 		return 1;
 	}
+
+    // If the tool requested is already in the spindle return.
+    if (millSlot == currentTool)
+    {
+        return 0;
+    }
 
     printf("Open Magazine. MillChanger.\n");
     OpenMagazine();
@@ -294,14 +302,30 @@ int LoadNewTool(int newTool)
 // Return x position of tool holder as a function of the tool in mm.
 float ToolPositionX(int tool)
 {
-    float xOffset = 0;
-
-    if (tool % 2 == 0)
+    float xOffset;
+    float xPosition;
+    if (persist.UserData[TABLE_EXECUTING_VAR] == 1)
     {
-        xOffset = 120.0;
-    }
+        xOffset = 0.0;
 
-    float xPosition = -12.5 + OFFSET_X + xOffset;
+        if (tool % 2 == 0)
+        {
+            xOffset = 120;
+        }
+
+        xPosition = 1603.0 - xOffset;
+    }
+    else
+    {
+        xOffset = 0;
+
+        if (tool % 2 == 0)
+        {
+            xOffset = 120.0;
+        }
+
+        xPosition = -1603.0 + xOffset;
+    }
     return xPosition;
 }
 
