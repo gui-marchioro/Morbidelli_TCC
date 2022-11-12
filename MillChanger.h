@@ -18,6 +18,7 @@
 #define PANTOGRAPH_MOVING_SENSOR_INPUT 1043 //Pantografo baixo
 #define PANTOGRAPH_ON_SENSOR_INPUT 1044 //Pantografo baixo
 
+#define OFFSET_X 20
 #define OFFSET_Y -20
 #define OFFSET_Z -7.5
 

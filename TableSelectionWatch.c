@@ -16,10 +16,8 @@ enum tableSelectionStates
     TableSelected,
     ReadyToExecute,
     SafeZBegin,
-    GoingToParkingBegin,
     ProgramExecution,
-    SafeZEnd,
-    GoingToParkingEnd
+    SafeZEnd
 };
 
 int tableExecuting = 0;
@@ -101,11 +99,14 @@ Table1SelectionWatch()
     case TableSelected:
         if (vacuumButtonChangeState == 1)
         {
-            SetBit(VACUUM1_OUTPUT);
-        }
-        else if (vacuumButtonChangeState == 0)
-        {
-            ClearBit(VACUUM1_OUTPUT);
+            if (ReadBit(VACUUM1_OUTPUT) == 0)
+            {
+                SetBit(VACUUM1_OUTPUT);
+            }
+            else
+            {
+                ClearBit(VACUUM1_OUTPUT);
+            }
         }
 
         if(tableButtonState == 1 && ReadBit(VACUUM1_CONFIRMATION_INPUT))
@@ -132,20 +133,7 @@ Table1SelectionWatch()
     case SafeZBegin:
         if(CheckDone(Z_AXIS))
         {
-            MoveX(0, 60);
-            states = GoingToParkingBegin;
-            printf("Going to GoingToParkingBegin1. TableSelectionWatch.\n");
-        }
-
-        break;
-
-    case GoingToParkingBegin:
-        if(CheckDone(X_AXIS))
-        {
-            MDI("G54");
-            //Invert X axis
-            ch0->InputGain0=1;
-            ch0->OutputGain=1;
+            MDI("G55");
             DoPC(PC_COMM_EXECUTE);
             states = ProgramExecution;
             printf("Going to ProgramExecution1. TableSelectionWatch.\n");
@@ -154,7 +142,7 @@ Table1SelectionWatch()
         break;
 
     case ProgramExecution:
-        if (!JOB_ACTIVE &&  persist.UserData[TABLE1_EXECUTING_VAR] == 0)
+        if (!JOB_ACTIVE && persist.UserData[TABLE1_EXECUTING_VAR] == 0)
         {
             MoveZ(0, 10);
             states = SafeZEnd;
@@ -166,27 +154,11 @@ Table1SelectionWatch()
     case SafeZEnd:
         if(CheckDone(Z_AXIS))
         {
-            MoveX(0, 60);
-            states = GoingToParkingEnd;
-            printf("Going to GoingToParkingEnd1. TableSelectionWatch.\n");
-        }
-
-        break;
-
-    case GoingToParkingEnd:
-        if(CheckDone(X_AXIS))
-        {
-            MDI("G54");
-            // Fix X direction
-            ch0->InputGain0=-1;
-            ch0->OutputGain=-1;
             ClearBit(VACUUM1_OUTPUT);
-            RestoreOffsetX();
-            printf("Going to InitialState1. TableSelectionWatch.\n");
             states = InitialState;
+            printf("Going to InitialState1. TableSelectionWatch.\n");
             persist.UserData[TABLE_EXECUTING_VAR] = 0;
         }
-
         break;
 
     default:
@@ -224,11 +196,14 @@ Table2SelectionWatch()
     case TableSelected:
         if (vacuumButtonChangeState == 1)
         {
-            SetBit(VACUUM2_OUTPUT);
-        }
-        else if (vacuumButtonChangeState == 0)
-        {
-            ClearBit(VACUUM2_OUTPUT);
+            if (ReadBit(VACUUM2_OUTPUT) == 0)
+            {
+                SetBit(VACUUM2_OUTPUT);
+            }
+            else
+            {
+                ClearBit(VACUUM2_OUTPUT);
+            }
         }
 
         if(tableButtonState == 1 && ReadBit(VACUUM2_CONFIRMATION_INPUT))
@@ -255,7 +230,7 @@ Table2SelectionWatch()
     case SafeZBegin:
         if(CheckDone(Z_AXIS))
         {
-            MDI("G54");
+            MDI("G56");
             DoPC(PC_COMM_EXECUTE);
             states = ProgramExecution;
             printf("Going to ProgramExecution2. TableSelectionWatch.\n");
@@ -368,7 +343,7 @@ Table1And2SelectionWatch()
     case SafeZBegin:
         if(CheckDone(Z_AXIS))
         {
-            MDI("G54");
+            MDI("G55");
             DoPC(PC_COMM_EXECUTE);
             states = ProgramExecution;
             printf("Going to ProgramExecution12. TableSelectionWatch.\n");

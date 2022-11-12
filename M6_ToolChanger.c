@@ -37,7 +37,6 @@ void main ()
     // Drill box routine
     else if (slot >= DRILL_BOX_SLOT_MIN && slot <= DRILL_BOX_SLOT_MAX)
     {
-        RestoreOffsetX();
         DrillRoutine(slot);
     }
     else

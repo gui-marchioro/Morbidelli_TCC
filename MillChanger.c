@@ -2,7 +2,6 @@
 #include "MillChangerDefs.h"
 #include "MovementDefs.h"
 #include "Spindle.h"
-#include "TableSelectionWatch.h"
 #include "KMotionDef.h"
 
 // Routine responsible for exchange mill tool.
@@ -302,30 +301,15 @@ int LoadNewTool(int newTool)
 // Return x position of tool holder as a function of the tool in mm.
 float ToolPositionX(int tool)
 {
-    float xOffset;
-    float xPosition;
-    if (persist.UserData[TABLE_EXECUTING_VAR] == 1)
+    float xOffset = 0.0;
+
+    if (tool % 2 == 0)
     {
-        xOffset = 0.0;
-
-        if (tool % 2 == 0)
-        {
-            xOffset = 120;
-        }
-
-        xPosition = 1603.0 - xOffset;
+        xOffset = 120.0;
     }
-    else
-    {
-        xOffset = 0;
 
-        if (tool % 2 == 0)
-        {
-            xOffset = 120.0;
-        }
+    float xPosition = -12.5 + OFFSET_X + xOffset;
 
-        xPosition = -1603.0 + xOffset;
-    }
     return xPosition;
 }
 
