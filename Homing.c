@@ -50,6 +50,16 @@ void HomeAllAxis()
     ch0->LimitSwitchOptions = SaveXLimits;  // restore limit settings
     HomeAxis(Y_AXIS, Y_HOME_INPUT_PIN, 50.0, -20.0, FACTOR_Y);
     ch1->LimitSwitchOptions = SaveYLimits;  // restore limit settings
+
+    // After homing axes adjust soft limits
+    ch0->SoftLimitPos=3e+03 / FACTOR_X;
+	ch0->SoftLimitNeg=0.0 / FACTOR_X;
+
+    ch1->SoftLimitPos=0.0 / FACTOR_Y;
+	ch1->SoftLimitNeg=-1.08e+03 / FACTOR_Y;
+
+    ch2->SoftLimitPos=0.0 / FACTOR_Z;
+	ch2->SoftLimitNeg=-1.08e+02 / FACTOR_Z;
 }
 
 // Sign that homing was executed to serve as a condition for other programs.
