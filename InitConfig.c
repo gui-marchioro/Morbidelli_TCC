@@ -24,9 +24,9 @@ void AxisConfig()
 	
 	ch0->InputMode=ENCODER_MODE;
 	ch0->OutputMode=DAC_SERVO_MODE;
-	ch0->Vel=6000;
-	ch0->Accel=40000;
-	ch0->Jerk=400000;
+	ch0->Vel=60000;
+	ch0->Accel=400000;
+	ch0->Jerk=4000000;
 	ch0->P=3;
 	ch0->I=1e-05;
 	ch0->D=15;
@@ -82,9 +82,9 @@ void AxisConfig()
 
 	ch1->InputMode=ENCODER_MODE;
 	ch1->OutputMode=DAC_SERVO_MODE;
-	ch1->Vel=6000;
-	ch1->Accel=40000;
-	ch1->Jerk=400000;
+	ch1->Vel=60000;
+	ch1->Accel=400000;
+	ch1->Jerk=4000000;
 	ch1->P=3;
 	ch1->I=1e-05;
 	ch1->D=15;
@@ -140,9 +140,9 @@ void AxisConfig()
 
 	ch2->InputMode=ENCODER_MODE;
 	ch2->OutputMode=DAC_SERVO_MODE;
-	ch2->Vel=6000;
-	ch2->Accel=40000;
-	ch2->Jerk=400000;
+	ch2->Vel=60000;
+	ch2->Accel=400000;
+	ch2->Jerk=4000000;
 	ch2->P=3;
 	ch2->I=1e-05;
 	ch2->D=15;
@@ -209,6 +209,7 @@ void IOboardsConfig()
     InitAux();
 	AddKonnect(0,&VirtualBits,VirtualBitsEx);
 	AddKonnect(1,VirtualBitsEx+1,VirtualBitsEx+2);
+	//AddKonnect(2,VirtualBitsEx+3,VirtualBitsEx+4);
 }
 
 // Sign that the initialization was executed to serve as a condition for other programs.
