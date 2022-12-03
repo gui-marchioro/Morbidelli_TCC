@@ -2,6 +2,7 @@
 #include "Homing.c"
 #include "Drill.c"
 #include "Spindle.c"
+#include "TableSelectionWatch.c"
 #include "KMotionDef.h"
 
 #ifndef TMP
@@ -13,10 +14,20 @@
 // DoPC(PC_COMM_ESTOP);
 void main()
 {
+    // For safety reasons, turn off spindle and drills
     ClearDrillOutputs();
     StopSpindle();
+    // Disable Axis
     ClearBit(ENABLE_ALL_AXIS_PIN);
+    // Reset Init and Homing variables, requiring the user do it again to keep using the machine
     ResetHomingExecuted();
     ResetIsExecutingHoming();
     ResetInitExecuted();
+    // Reset table states
+    persist.UserData[TABLE_EXECUTING_VAR] = 0;
+    persist.UserData[TABLE1_EXECUTING_VAR] = 0;
+    persist.UserData[TABLE2_EXECUTING_VAR] = 0;
+    persist.UserData[TABLE12_EXECUTING_VAR] = 0;
+    // Reset table outputs
+    ClearTableOutputs();
 }

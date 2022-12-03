@@ -22,6 +22,17 @@ enum tableSelectionStates
 
 int tableExecuting = 0;
 
+void ClearTableOutputs()
+{
+    // Table 1
+    ClearBit(AUXILIARY_POSITIONING1_OUTPUT);
+    ClearBit(VACUUM1_OUTPUT);
+    // Table 2
+    ClearBit(AUXILIARY_POSITIONING2_OUTPUT);
+    ClearBit(AUXILIARY_POSITIONING_MIDDLE_OUTPUT);
+    ClearBit(VACUUM2_OUTPUT);
+}
+
 // Move Axis X at specified Speed
 // return 0 = success, 1 if axis disabled
 int MoveX(float x, float Speed)
@@ -75,6 +86,15 @@ Table1SelectionWatch()
     static enum tableSelectionStates states = InitialState; // Initializes the state machine
     static int tableButtonChangeState=-1,tlast=0,tlastsolid=-1,tcount=0; // initialize the table selection button state variables for switch debouncing
     static int vacuumButtonChangeState=-1,vlast=0,vlastsolid=-1,vcount=0; // initialize the vacuum button state variables for switch debouncing
+
+    // To reset outputs when an init is performed
+    static int firstTime = 1;
+    if (firstTime == 1)
+    {
+        ClearBit(AUXILIARY_POSITIONING1_OUTPUT);
+        ClearBit(VACUUM1_OUTPUT);
+        firstTime = 0;
+    }
 
     tableExecuting = persist.UserData[TABLE_EXECUTING_VAR];
 
@@ -173,6 +193,16 @@ Table2SelectionWatch()
     static int tableButtonChangeState=-1,tlast=0,tlastsolid=-1,tcount=0; // initialize the table selection button state variables for switch debouncing
     static int vacuumButtonChangeState=-1,vlast=0,vlastsolid=-1,vcount=0; // initialize the vacuum button state variables for switch debouncing
 
+    // To reset outputs when an init is performed
+    static int firstTime = 1;
+    if (firstTime == 1)
+    {
+        ClearBit(AUXILIARY_POSITIONING2_OUTPUT);
+        ClearBit(AUXILIARY_POSITIONING_MIDDLE_OUTPUT);
+        ClearBit(VACUUM2_OUTPUT);
+        firstTime = 0;
+    }
+
     tableExecuting = persist.UserData[TABLE_EXECUTING_VAR];
 
     tableButtonChangeState = Debounce(ReadBit(TABLE2_BUTTON_INPUT),&tcount,&tlast,&tlastsolid);
@@ -187,6 +217,7 @@ Table2SelectionWatch()
         if (tableButtonChangeState == 1)
         {
             SetBit(AUXILIARY_POSITIONING2_OUTPUT);
+            SetBit(AUXILIARY_POSITIONING_MIDDLE_OUTPUT);
             states = TableSelected;
             printf("Going to Table2Selected. TableSelectionWatch.\n");
         }
@@ -209,6 +240,7 @@ Table2SelectionWatch()
         if(tableButtonState == 1 && ReadBit(VACUUM2_CONFIRMATION_INPUT))
         {
             ClearBit(AUXILIARY_POSITIONING2_OUTPUT);
+            ClearBit(AUXILIARY_POSITIONING_MIDDLE_OUTPUT);
             states = ReadyToExecute;
             printf("Going to ReadyToExecute2. TableSelectionWatch.\n");
         }
