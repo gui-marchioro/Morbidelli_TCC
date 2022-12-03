@@ -3,7 +3,7 @@
                         /* Including a header file twice causes all kinds */
                         /* of interesting problems.*/
 
-#define ENABLE_ALL_AXIS_PIN 1056 // Brake enabled
+#define ENABLE_ALL_AXIS_PIN 1120 // Brake enabled
 #define INIT_EXECUTED_VAR 180
 
 // Initial configuration for Axis and IOBoards

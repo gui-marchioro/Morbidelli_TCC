@@ -1,15 +1,15 @@
 #ifndef EmergencyWatch_h
 #define EmergencyWatch_h
 
-#define THERMAL_PROTECTION_PIN 1089
-#define GENERAL_EMERGENCY_PIN 1090 // Axis limit, indicates emergency when low
-#define HAS_PRESSURE_PIN 1091
+#define THERMAL_PROTECTION_PIN 1153
+#define GENERAL_EMERGENCY_PIN 1154 // Axis limit, indicates emergency when low
+#define HAS_PRESSURE_PIN 1155
 #define X_AXIS_NEGATIVE_LIMIT_PIN 139
 #define X_AXIS_POSITIVE_LIMIT_PIN 140
 #define Y_AXIS_NEGATIVE_LIMIT_PIN 141
 #define Y_AXIS_POSITIVE_LIMIT_PIN 142
 #define Z_AXIS_NEGATIVE_LIMIT_PIN 143
-#define Z_AXIS_POSITIVE_LIMIT_PIN 1088
+#define Z_AXIS_POSITIVE_LIMIT_PIN 1152
 
 #define EMERGENCY_STATE_VAR 183
 

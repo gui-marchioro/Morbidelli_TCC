@@ -3,8 +3,8 @@
 
 // Commom inputs, outputs and vars for the milling tool manual and automatic exchange
 // Outputs to be controled for tool exchange
-#define EXTRACT_OUTPUT 1066
-#define OPEN_TOOL_GRIPPER_OUTPUT 1067
+#define EXTRACT_OUTPUT 1130
+#define OPEN_TOOL_GRIPPER_OUTPUT 1131
 // Vars
 #define PREVIOUS_TOOL_VAR 191
 #define PREVIOUS_TOOL_LABEL_VAR 192

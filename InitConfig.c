@@ -160,7 +160,7 @@ void AxisConfig()
 	ch2->MasterAxis=-1;
 	ch2->LimitSwitchOptions=0x12f;
 	ch2->LimitSwitchNegBit=143;
-	ch2->LimitSwitchPosBit=1088;
+	ch2->LimitSwitchPosBit=1152;
 	ch2->SoftLimitPos=1e+09;
 	ch2->SoftLimitNeg=-1e+09;
 	ch2->InputGain0=1;
@@ -209,7 +209,7 @@ void IOboardsConfig()
     InitAux();
 	AddKonnect(0,&VirtualBits,VirtualBitsEx);
 	AddKonnect(1,VirtualBitsEx+1,VirtualBitsEx+2);
-	//AddKonnect(2,VirtualBitsEx+3,VirtualBitsEx+4);
+	AddKonnect(2,VirtualBitsEx+3,VirtualBitsEx+4);
 }
 
 // Sign that the initialization was executed to serve as a condition for other programs.
