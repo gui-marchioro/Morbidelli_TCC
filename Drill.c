@@ -1,9 +1,25 @@
 #include "Drill.h"
 #include "KMotionDef.h"
 
+void SetDrillBoxStatus()
+{
+    persist.UserData[DRILL_STATUS_VAR] = 1;
+}
+
+void ResetDrillBoxStatus()
+{
+    persist.UserData[DRILL_STATUS_VAR] = 0;
+}
+
+int GetDrillBoxStatus()
+{
+    return persist.UserData[DRILL_STATUS_VAR];
+}
+
 // Clear all outputs related to the drill operation
 void ClearDrillOutputs()
 {
+    ResetDrillBoxStatus();
     ClearBit(DRILL_MOTOR_OUTPUT);
     ClearBit(DRILL_1_PISTON_OUTPUT);
     ClearBit(DRILL_2_PISTON_OUTPUT);
@@ -31,6 +47,7 @@ void ClearDrillOutputs()
 // Select and detach the selected drill
 void DrillRoutine(int drillSlot)
 {
+    SetDrillBoxStatus();
     Delay_sec(0.25);
     SetBit(DRILL_MOTOR_OUTPUT);
     Delay_sec(0.25);

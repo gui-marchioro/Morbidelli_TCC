@@ -18,9 +18,13 @@ void main ()
 	// int id = persist.UserData[TOOL_VAR+1];  // value stored is an int 
 	// printf("Tool Set to slot %d id %d\n",slot,id);  // print the slot and id
 
-    ClearDrillOutputs();
+    // Turn off drill box if it is on.
+    if (GetDrillBoxStatus() == 1)
+    {
+        ClearDrillOutputs();
+    }
 
-    // Turn off spindle if on.
+    // Turn off spindle if it is on.
     if (GetSpindleStatus() != SPINDLE_OFF)
     {
         StopSpindle();

@@ -1,9 +1,17 @@
 #include "KMotionDef.h"
 #include "Spindle.c"
+#include "Drill.c"
 
 // Routine to be executed when M4 is called in a G program.
 main()
 {
+    // Turn off drill box if it is on.
+    if (GetDrillBoxStatus() == 1)
+    {
+        ClearDrillOutputs();
+    }
+
+    // Turn off enable CW
     ClearBit(CW_ENABLE_OUTPUT);
 
     // If spindle was on in the opposite direction blocks the execution of M3 command until

@@ -1,6 +1,8 @@
 #ifndef Drill_h
 #define Drill_h
 
+#define DRILL_STATUS_VAR 193
+
 #define DRILL_BOX_SLOT_MIN 11
 #define DRILL_BOX_SLOT_MAX 31
 
