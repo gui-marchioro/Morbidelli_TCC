@@ -52,7 +52,7 @@ void HomeAllAxis()
     ch1->LimitSwitchOptions = SaveYLimits;  // restore limit settings
 
     // After homing axes adjust soft limits
-    ch0->SoftLimitPos=3e+03 / FACTOR_X;
+    ch0->SoftLimitPos=3.2e+03 / FACTOR_X;
 	ch0->SoftLimitNeg=0.0 / FACTOR_X;
 
     ch1->SoftLimitPos=0.0 / FACTOR_Y;
