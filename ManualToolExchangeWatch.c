@@ -69,7 +69,7 @@ void ManualToolExchangeWatch(void)
 
     // Only monitors the next methods if no G Code or Homing is running
     // If not, clear the states machine and low the outputs
-    if ((JOB_ACTIVE == 1) || (GetIsExecutingHoming() == 1))
+    if (GetSpindleStatus() != 0 || (GetIsExecutingHoming() == 1))
     {
         //ClearBit(EXTRACT_OUTPUT); // commented because it generates a race condition while M6 command was executing
         //ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
