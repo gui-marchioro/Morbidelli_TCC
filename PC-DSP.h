@@ -6,7 +6,7 @@
 #ifndef __PCDSP_H
 #define __PCDSP_H
 
-#define KMOTION_VER "4.34"  
+#define KMOTION_VER "4.35h"  
 
 #define ABORT_CHAR 0x03  // ctrl-c clears/aborts any command
 
@@ -149,10 +149,11 @@
 // Get GCode Misc Settings	Persist+1 = where to set values to KFLOP persist (32-bit integers) 
 //     (GCode -> KFLOP persist)  4 values are sent to KFLOP,  
 //											Inches(1)/Metric(2) Flag
-//											Tool Slot T number
+//											Tool Slot T number  (table index)
 //											Tool Index H number (length index)
 //											Tool Index D number (radius index)
-#define PC_COMM_GET_MISC_SETTINGS 25 // Persist+1=Dest for values  
+#define PC_COMM_GET_MISC_SETTINGS 25 // Persist+1=Dest for values  // Get GCode Misc Settings	Persist+1 = where to set values to KFLOP persist (32-bit integers) 
+
 
 // Get GCode Interpreter DROS Persist+1 = where to place them in KFLOP persist (double offset)
 //     (GCode Machine Coordinates -> KFLOP persist) note: vars are transferred as doubles 2 persists each
@@ -229,6 +230,11 @@
 #define PC_COMM_SET_RRO 54 // Persist+1 is the RRO (Rapid Rate Override) as a float
 #define PC_COMM_SET_RRO_INC 55 // Persist+1 is RRO (Rapid Rate Override) the factor to change it as float
 
+#define PC_COMM_SCREEN_SCRIPT 56 // Persist+1 = gather buffer offset (32-bit words) to Screen Script String
+
+// Get GCode Tool Table Index from ID Persist+1 = Tool ID (or slot if < 100)
+//								      Persist+2 = where to set Tool Table Index - persist index 
+#define PC_COMM_GET_TOOLTABLE_INDEX 57 // Persist+1=#ToolID,+2=Dest   
 
 
 #define PC_COMM_PERSIST 100  // First Persist Variable that is uploaded in status
@@ -244,6 +250,15 @@
 #define PC_COMM_CSS_X_FACTOR 112	// X axis factor to convert counts to inches 
 #define PC_COMM_CSS_S 113			// S speed setting in inches/sec
 #define PC_COMM_CSS_MAX_RPM 114		// Limit max RPM to this value as Radius approaches zero
+
+
+//     (GCode -> KFLOP persist)  2 values are sent to KFLOP,  
+//						Tool Slot from current Tool Table entry (integer)  
+//						Tool ID from current Tool Table entry   (integer)
+#define PC_COMM_GET_TOOL_SLOT_ID 115 // Persist+1=Dest for values  
+
+
+
 
 
 #define MACH3_PROBE_STATUS_VAR 62
@@ -376,6 +391,8 @@ typedef struct
 // mpg jogging
 
 #define HOST_JOB_ACTIVE_BIT 1 // bit0 indicates Host Job is Actively running
+#define HOST_BLOCK_DELETE_BIT 2 // bit1 indicates Block Delete checkbox set
+#define HOST_RTCP_ACTIVE_BIT 4 // bit2 indicates Interpreter has TCP Active
 
 
 #endif
