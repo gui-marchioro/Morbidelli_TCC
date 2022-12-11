@@ -58,7 +58,7 @@ void HomeAllAxis()
     ch1->SoftLimitPos=0.0 / FACTOR_Y;
 	ch1->SoftLimitNeg=-1.08e+03 / FACTOR_Y;
 
-    ch2->SoftLimitPos=0.0 / FACTOR_Z;
+    ch2->SoftLimitPos=2.0 / FACTOR_Z;
 	ch2->SoftLimitNeg=-1.08e+02 / FACTOR_Z;
 }
 
