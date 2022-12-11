@@ -5,10 +5,12 @@
 // Routine to be executed when M4 is called in a G program.
 main()
 {
-    // Turn off drill box if it is on.
+    // Turn on drill box if it is setted.
     if (GetDrillBoxStatus() == 1)
     {
-        ClearDrillOutputs();
+        StopSpindle();
+        SetBit(DRILL_MOTOR_OUTPUT);
+        return; 
     }
 
     // Turn off enable CW

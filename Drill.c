@@ -48,9 +48,6 @@ void ClearDrillOutputs()
 void DrillRoutine(int drillSlot)
 {
     SetDrillBoxStatus();
-    Delay_sec(0.25);
-    SetBit(DRILL_MOTOR_OUTPUT);
-    Delay_sec(0.25);
     switch (drillSlot)
     {
         case DRILL_1_SLOT:
