@@ -4,6 +4,68 @@
 #include "Spindle.h"
 #include "KMotionDef.h"
 
+// check if Current Tool number Valid
+// -1 = no tool loaded
+// 1-10 = valid tool
+BOOL ToolNumberValid(int tool);
+
+// Routine responsible for exchange mill tool.
+// Return 0=Success, 1=Failure
+int MillExchangeRoutine(int millSlot);
+
+// Opens the tool magazine.
+void OpenMagazine();
+
+// Closes the tool magazine.
+void CloseMagazine();
+
+// save the tool number to KFLOP global Variable and to PC Disk file in case power is lost.
+void SaveCurrentTool(int millSlot);
+
+// Get the last loaded tool.  Parameter points to where to return tool
+// First try to get from KFLOP memory
+// if memory is invalid, try to read from disk
+// if can't read disk then ask Operator
+// returns 0 on success, 1 on fail or Operator asked to abort
+int GetCurrentTool(int *ptool);
+
+// Remove tool in spindle by going to holder of current tool.
+int UnloadTool(int currentTool);
+
+// Load new Tool (Spindle must be empty).
+int LoadNewTool(int newTool);
+
+// Return x position of tool holder as a function of the tool in mm.
+float ToolPositionX(int tool);
+
+// Return y position of tool holder as a function of the tool in mm.
+float ToolPositionY(int tool);
+
+// Return z position of tool holder in mm.
+float ToolPositionZ();
+
+// Move Axis XY at specified Speed and wait until complete
+// return 0 = success, 1 if axis disabled
+int MoveXY(float x, float y, float Speed);
+
+// Move Axis Z at specified Speed and wait until complete
+// return 0 = success, 1 if axis disabled
+int MoveZ(float z, float Speed);
+
+// Activate piston actuators to approach tool holder in z axis.
+void EnablePistons();
+
+// Disable piston actuators.
+void DisablePistons();
+
+// Eject milling tool.
+// return 0 = success, 1 if sensor points that the tool is still grabbed.
+int EjectTool();
+
+// Grab milling tool.
+// return 0 = success, 1 if sensor points that the tool is not grabbed.
+int GrabTool();
+
 // Routine responsible for exchange mill tool.
 // Return 0=Success, 1=Failure
 int MillExchangeRoutine(int millSlot)
@@ -85,7 +147,6 @@ void SaveCurrentTool(int millSlot)
 	fprintf(f,"%d\n", millSlot);
 	fclose(f);
     UpdateCurrentToolLabel(millSlot);
-	return 0;
 }
 
 void UpdateCurrentToolLabel(int currentTool)

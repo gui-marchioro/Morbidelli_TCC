@@ -2,6 +2,11 @@
 #include "MillChangerDefs.h"
 #include "KMotionDef.h"
 
+// check if Current Tool number Valid
+// -1 = no tool loaded
+// 1-10 = valid tool
+BOOL ToolNumberValid(int tool);
+
 // Posible states for the tool exchange cycle
 enum toolExchangeStates
 {

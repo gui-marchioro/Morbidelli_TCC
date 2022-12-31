@@ -1,3 +1,5 @@
+#include "KMotionDef.h"
+
 #include "InitConfig.c"
 #include "MPGWatch.c"
 #include "EmergencyWatch.c"
@@ -6,7 +8,6 @@
 #include "Spindle.c"
 #include "MillChanger.c"
 #include "TableSelectionWatch.c"
-#include "KMotionDef.h"
 
 // Initialization program that runs when the Init button is pressed inside KMotionCNC
 // It initializes the boards, monitors alarms and listen to the IOs of the machine
@@ -25,7 +26,10 @@ main()
     InitConfig();
     // Updates current milling tool in use
     int currentTool;
-    GetCurrentTool(&currentTool);
+    if(!GetCurrentTool(&currentTool))
+    {
+        persist.UserData[PREVIOUS_TOOL_VAR] = currentTool;
+    }
 
     // monitor external buttons, MPG and Emergency variables
     for(;;)

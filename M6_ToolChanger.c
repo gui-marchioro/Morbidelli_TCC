@@ -1,6 +1,3 @@
-#include "Drill.c"
-#include "MillChanger.c"
-#include "Spindle.c"
 #include "KMotionDef.h"
 
 #ifndef TMP
@@ -8,10 +5,14 @@
 #include "KflopToKMotionCNCFunctions.c"
 #endif
 
+#include "Drill.c"
+#include "MillChanger.c"
+#include "Spindle.c"
+
 #define TOOL_VAR 9
 
 // Routine to be executed when M6 TX is called in a G program. (X is the tool number)
-void main ()
+int main ()
 {
     // int previousSlot = persist.UserData[PREVIOUS_TOOL_VAR];
     int slot = persist.UserData[TOOL_VAR];  // Requested tool slot. Value stored is an int 
@@ -47,4 +48,6 @@ void main ()
     {
         MsgBox("The selected tool is out of the range. Please select one that is defined inside the tool table.", MB_ICONEXCLAMATION);
     }
+
+    return 0;
 }

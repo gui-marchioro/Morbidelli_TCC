@@ -1,7 +1,7 @@
+#include "KMotionDef.h"
 #include "Homing.c"
 #include "InitConfig.c"
 #include "MillChanger.h"
-#include "KMotionDef.h"
 
 #define TMP 10 // which spare persist to use to transfer data
 #include "KflopToKMotionCNCFunctions.c"

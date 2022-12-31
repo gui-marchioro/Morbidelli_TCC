@@ -9,6 +9,8 @@
 #define PREVIOUS_TOOL_VAR 191
 #define PREVIOUS_TOOL_LABEL_VAR 192
 
-#define TOOL_DISK_FILE "c:\\Kmotion434\\KMotion\\Data\\ToolChangerData.txt"
+#define TOOL_DISK_FILE "c:\\Kmotion435h\\KMotion\\Data\\ToolChangerData.txt"
+
+void UpdateCurrentToolLabel(int currentTool);
 
 #endif /* MillChangerDefs_h */

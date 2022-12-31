@@ -19,10 +19,4 @@
 #define SPINDLE_ON_CW 1
 #define SPINDLE_ON_CCW 2
 
-void SetSpindleStatus(int Status);
-
-int GetSpindleStatus();
-
-void StopSpindle();
-
 #endif /* Spindle_h */

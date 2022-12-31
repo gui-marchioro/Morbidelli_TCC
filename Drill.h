@@ -51,10 +51,4 @@
 #define DRILL_20_PISTON_OUTPUT 
 #define DRILL_21_PISTON_OUTPUT */
 
-// Clear all outputs related to the drill operation
-void ClearDrillOutputs();
-
-// Select and detach the selected drill
-void DrillRoutine(int drillSlot);
-
 #endif /* Drill_h */

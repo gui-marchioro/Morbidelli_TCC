@@ -1,14 +1,15 @@
-#include "InitConfig.c"
-#include "Homing.c"
-#include "Drill.c"
-#include "Spindle.c"
-#include "TableSelectionWatch.c"
 #include "KMotionDef.h"
 
 #ifndef TMP
 #define TMP 10 // which spare persist to use to transfer data
 #include "KflopToKMotionCNCFunctions.c"
 #endif
+
+#include "InitConfig.c"
+#include "Homing.c"
+#include "Drill.c"
+#include "Spindle.c"
+#include "TableSelectionWatch.c"
 
 // Program to be executed when the Stop button is pressed
 // DoPC(PC_COMM_ESTOP);

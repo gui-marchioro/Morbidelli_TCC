@@ -1,6 +1,10 @@
 #include "Spindle.h"
 #include "KMotionDef.h"
 
+void SetSpindleStatus(int Status);
+int GetSpindleStatus();
+void StopSpindle();
+
 void SetSpindleStatus(int Status)
 {
     persist.UserData[SPINDLE_STATUS_VAR] = Status;
