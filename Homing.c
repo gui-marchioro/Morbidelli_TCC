@@ -31,6 +31,126 @@ void HomeAxis(int Axis, int HomePin, int Vel, double Position, double mmFactor)
     while (!CheckDone(Axis)) ; // loop until motion completes
 }
 
+// Posible states for homing axis
+enum homeAxisStates
+{
+    Initial,
+    JogUntilLimit,
+    ReverseJog,
+    ZeroAxis,
+    SafeMove,
+    End
+};
+
+void HomeHorizontalAxis(int Vel, double Position)
+{
+    enum homeAxisStates XState = Initial;
+    enum homeAxisStates YState = Initial;
+
+    while (XState != End || YState != End)
+    {
+        switch (XState)
+        {
+        case Initial:
+            Jog(X_AXIS, -Vel / FACTOR_X);
+            XState = JogUntilLimit;
+            break;
+
+        case JogUntilLimit:
+            if (ReadBit(X_HOME_INPUT_PIN))
+            {
+                Jog(X_AXIS, (Vel/10.0) / FACTOR_X);
+                XState = ReverseJog;
+            }
+
+            break;
+        
+        case ReverseJog:
+            if (!ReadBit(X_HOME_INPUT_PIN))
+            {
+                Jog(X_AXIS, 0);
+                XState = ZeroAxis;
+            }
+
+            break;
+
+        case ZeroAxis:
+            if (CheckDone(X_AXIS)) // loop until motion completes
+            {
+                DisableAxis(X_AXIS);			// disable the axis
+                Zero(X_AXIS);				// Zero the position
+                EnableAxis(X_AXIS);
+                MoveAtVel(X_AXIS, Position / FACTOR_X, Vel / FACTOR_X);
+                XState = SafeMove;
+            }
+                
+            break;
+
+        case SafeMove:
+            if (CheckDone(X_AXIS))
+            {
+                XState = End;
+            }
+
+            break;
+
+        default:
+            break;
+        }
+
+        switch (YState)
+        {
+        case Initial:
+            Jog(Y_AXIS, Vel / FACTOR_Y);
+            YState = JogUntilLimit;
+            break;
+
+        case JogUntilLimit:
+            if (ReadBit(Y_HOME_INPUT_PIN))
+            {
+                Jog(Y_AXIS, -(Vel/10.0) / FACTOR_Y);
+                YState = ReverseJog;
+            }
+
+            break;
+        
+        case ReverseJog:
+            if (!ReadBit(Y_HOME_INPUT_PIN))
+            {
+                Jog(Y_AXIS, 0);
+                YState = ZeroAxis;
+            }
+
+            break;
+
+        case ZeroAxis:
+            if (CheckDone(Y_AXIS)) // loop until motion completes
+            {
+                DisableAxis(Y_AXIS);			// disable the axis
+                Zero(Y_AXIS);				// Zero the position
+                EnableAxis(Y_AXIS);
+                MoveAtVel(Y_AXIS, -Position / FACTOR_Y, Vel / FACTOR_Y);
+                YState = SafeMove;
+            }
+                
+            break;
+
+        case SafeMove:
+            if (CheckDone(Y_AXIS))
+            {
+                YState = End;
+            }
+            
+            break;
+
+        default:
+            break;
+        }
+
+        WaitNextTimeSlice();
+    }
+}
+
 // Home all axis
 void HomeAllAxis()
 {
@@ -46,9 +166,8 @@ void HomeAllAxis()
 
     HomeAxis(Z_AXIS, Z_HOME_INPUT_PIN, 5.0, -7.5, FACTOR_Z);
     ch2->LimitSwitchOptions = SaveZLimits;  // restore limit settings
-    HomeAxis(X_AXIS, X_HOME_INPUT_PIN, -50.0, 20.0, FACTOR_X);
+    HomeHorizontalAxis(50.0, 20.0);
     ch0->LimitSwitchOptions = SaveXLimits;  // restore limit settings
-    HomeAxis(Y_AXIS, Y_HOME_INPUT_PIN, 50.0, -20.0, FACTOR_Y);
     ch1->LimitSwitchOptions = SaveYLimits;  // restore limit settings
 
     // After homing axes adjust soft limits
