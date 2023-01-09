@@ -1,6 +1,7 @@
 #include "KMotionDef.h"
 #include "Homing.c"
 #include "InitConfig.c"
+#include "Magazine.h"
 #include "MillChanger.h"
 
 #define TMP 10 // which spare persist to use to transfer data
@@ -27,4 +28,6 @@ void HaltAndWarn(char *message)
     MsgBoxNoWait(message, MB_ICONEXCLAMATION);
     Delay_sec(1);
     DoPC(PC_COMM_RESTART);
+    Delay_sec(1);
+    MDI("M30");
 }

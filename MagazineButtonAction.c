@@ -6,8 +6,11 @@
 #endif
 
 #include "MillChanger.c"
+#include "Magazine.c"
 #include "InitConfig.c"
 #include "Homing.c"
+
+void UpdateMillingToolInUse();
 
 main()
 {
@@ -21,11 +24,43 @@ main()
     if (ReadBit(MAGAZINE_CLOSED_INPUT))
     {
         printf("Open Magazine request. MagazineButtonAction.\n");
-        OpenMagazine();
+        OpenMagazineNoWait();
+        ClearBit(CLOSE_MAGAZINE_OUTPUT);
     }
     else
     {
         printf("Close Magazine request. MagazineButtonAction.\n");
-        CloseMagazine();
+        CloseMagazineNoWait();
+        ClearBit(OPEN_MAGAZINE_OUTPUT);
+        UpdateMillingToolInUse();
+    }
+}
+
+void UpdateMillingToolInUse()
+{
+    float value = 0.0f;
+    int Answer = InputBox("Tool in Spindle or -1",&value);
+    int tool = (int) value;
+    if (Answer)
+    {
+        printf("Operator Canceled\n");
+        return 1;
+    }
+    else if (!ToolNumberValid(tool))  // check if invalid
+    {
+        char s[80];
+        sprintf(s,"Invalid Current Tool Number %d\n",tool);
+        printf(s);
+        MsgBox(s, MB_ICONHAND | MB_OK);
+        return 1;
+    }
+    else
+    {
+        persist.UserData[PREVIOUS_TOOL_VAR]=tool;
+        FILE *f=fopen(TOOL_DISK_FILE,"wt");
+        fprintf(f,"%d\n",tool);
+        fclose(f);
+        UpdateCurrentToolLabel(tool);
+        printf("Operator Entered Value of %d\n",tool);
     }
 }

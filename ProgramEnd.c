@@ -1,7 +1,11 @@
+#include "KMotionDef.h"
+
 #include "TableSelectionWatch.h"
+#include "MillChanger.h"
+#include "Magazine.h"
 #include "Spindle.c"
 #include "Drill.c"
-#include "KMotionDef.h"
+#include "Saw.c"
 
 main()
 {
@@ -32,5 +36,15 @@ main()
     if (GetDrillBoxStatus() == 1)
     {
         ClearDrillOutputs();
+    }
+
+    if (GetSawStatus() > 0)
+    {
+        ClearSawOutputs();
+    }
+
+    if (ReadBit(MAGAZINE_CLOSED_INPUT))
+    {
+        ClearBit(CLOSE_MAGAZINE_OUTPUT);
     }
 }

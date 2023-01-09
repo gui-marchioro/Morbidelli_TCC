@@ -1,8 +1,9 @@
+#include "KMotionDef.h"
 #include "MillChanger.h"
 #include "MillChangerDefs.h"
 #include "MovementDefs.h"
 #include "Spindle.h"
-#include "KMotionDef.h"
+#include "Magazine.h"
 
 // check if Current Tool number Valid
 // -1 = no tool loaded
@@ -12,12 +13,6 @@ BOOL ToolNumberValid(int tool);
 // Routine responsible for exchange mill tool.
 // Return 0=Success, 1=Failure
 int MillExchangeRoutine(int millSlot);
-
-// Opens the tool magazine.
-void OpenMagazine();
-
-// Closes the tool magazine.
-void CloseMagazine();
 
 // save the tool number to KFLOP global Variable and to PC Disk file in case power is lost.
 void SaveCurrentTool(int millSlot);
@@ -33,7 +28,7 @@ int GetCurrentTool(int *ptool);
 int UnloadTool(int currentTool);
 
 // Load new Tool (Spindle must be empty).
-int LoadNewTool(int newTool);
+int LoadNewTool(int newTool, int hasUnloadedTool);
 
 // Return x position of tool holder as a function of the tool in mm.
 float ToolPositionX(int tool);
@@ -70,6 +65,7 @@ int GrabTool();
 // Return 0=Success, 1=Failure
 int MillExchangeRoutine(int millSlot)
 {
+    int hasUnloadedTool = 0;
     int currentTool;
 
     //  -1=Spindle empty, 0=unknown, 1-4 Tool Slot loaded into Spindle
@@ -96,7 +92,7 @@ int MillExchangeRoutine(int millSlot)
     }
 
     printf("Open Magazine. MillChanger.\n");
-    OpenMagazine();
+    OpenMagazineNoWait();
 	
 	if (currentTool != -1) // is there a tool in the Spindle??
     {
@@ -105,38 +101,22 @@ int MillExchangeRoutine(int millSlot)
         {
             return 1;
         }
+
+        hasUnloadedTool = 1;
     }
 		
 	// Now Spindle is empty, load requested tool
     printf("Load new tool. MillChanger.\n");
-	if (LoadNewTool(millSlot))
+	if (LoadNewTool(millSlot, hasUnloadedTool))
     {
         return 1;
     }
 
     printf("Close Magazine. MillChanger.\n");
-    CloseMagazine();
+    CloseMagazineNoWait();
 	
 	SaveCurrentTool(millSlot);  // save the one that has been loaded
 	return 0;  // success
-}
-
-// Opens the tool magazine.
-void OpenMagazine()
-{
-    SetBit(OPEN_MAGAZINE_OUTPUT);
-    while(!ReadBit(MAGAZINE_OPENED_INPUT));
-    //Delay_sec(4);
-    ClearBit(OPEN_MAGAZINE_OUTPUT);
-}
-
-// Closes the tool magazine.
-void CloseMagazine()
-{
-    SetBit(CLOSE_MAGAZINE_OUTPUT);
-    while(!ReadBit(MAGAZINE_CLOSED_INPUT));
-    //Delay_sec(4);
-    ClearBit(CLOSE_MAGAZINE_OUTPUT);
 }
 
 // save the tool number to KFLOP global Variable and to PC Disk file in case power is lost.
@@ -228,135 +208,301 @@ BOOL ToolNumberValid(int tool)
 	return tool == -1 || (tool>=1 && tool<=10);
 }
 
-// Remove tool in spindle by going to holder of current tool.
+// Posible states to unload tool cycle
+enum unloadStates
+{
+    UnloadSafeZ,
+    MovePlaneUnloadTool,
+    UnloadApproachZ,
+    UnloadApproachPistons,
+    UnloadEject,
+    UnloadEnd,
+    UnloadError,
+    UnloadErrorEnd
+};
+
 int UnloadTool(int currentTool)
 {
-    // - Rapid to Z Home to clear any work that may be on the table
-	if (MoveZ(0.0, SLOW_SPEED))
+    enum unloadStates states = UnloadSafeZ;
+    printf("Going to UnloadSafeZ. Unload tool. MillChanger.\n");
+    double T0=0.0;  // remember the last time we turned on
+
+    do
+    {
+        double T=Time_sec(); // get current Time_sec
+        
+        if (!JOB_ACTIVE)
+        {
+            printf("Going to UnloadError. Unload tool. MillChanger.\n");
+            states = UnloadError;
+        }
+
+        switch (states)
+        {
+        case UnloadSafeZ:
+            // - Rapid to Z Home to clear any work that may be on the table
+            if (MoveZ(0.0, FAST_SPEED))
+            {
+                printf("Going to UnloadError. Unload tool. MillChanger.\n");
+                states = UnloadError;
+                break;
+            }
+            
+            printf("Going to MovePlaneUnloadTool. Unload tool. MillChanger.\n");
+            states = MovePlaneUnloadTool;
+            break;
+        
+        case MovePlaneUnloadTool:
+            // - Rapid to current tool position to execute Z move
+            if (MoveXY(ToolPositionX(currentTool), ToolPositionY(currentTool), FAST_SPEED))
+            {
+                printf("Going to UnloadError. Unload tool. MillChanger.\n");
+                states = UnloadError;
+                break;
+            }
+
+            printf("Going to UnloadApproachZ. Unload tool. MillChanger.\n");
+            states = UnloadApproachZ;
+            break;
+
+        case UnloadApproachZ:
+            // Does not approach in the magazine if not is not opened
+            if (!ReadBit(MAGAZINE_OPENED_INPUT))
+            {
+                break;
+            }
+            // - Approach tool holder by matching Z height of tool flange currently in spindle with tool holder                            claw
+            if (MoveZ(ToolPositionZ(), FAST_SPEED))
+            {
+                printf("Going to UnloadError. Unload tool. MillChanger.\n");
+                states = UnloadError;
+                break;
+            }
+
+            printf("Going to UnloadApproachPistons. Unload tool. MillChanger.\n");
+            T0=T;  // set start time of cycle
+            states = UnloadApproachPistons;
+            break;
+
+        case UnloadApproachPistons:
+            // Activate piston actuators to approach tool in z axis.
+            SetBit(PISTONS_ENABLE_OUTPUT);
+            SetBit(PISTONL_ENABLE_OUTPUT);
+            if (T > T0 + 2.0)
+            {
+                T0 = 0.0;
+                printf("Going to UnloadEject. Unload tool. MillChanger.\n");
+                states = UnloadEject;
+            }
+
+            break;
+
+        case UnloadEject:
+            // - Eject tool
+            if (EjectTool())
+            {
+                printf("Going to UnloadError. Unload tool. MillChanger.\n");
+                states = UnloadError;
+                break;
+            }
+
+            printf("Going to UnloadEnd. Unload tool. MillChanger.\n");
+            states = UnloadEnd;
+            break;
+        
+        case UnloadError:
+            ClearStopImmediately(); // Clear Stop Condition without resuming
+            ClearBit(PISTONS_ENABLE_OUTPUT);
+            ClearBit(PISTONL_ENABLE_OUTPUT);
+            printf("Going to UnloadErrorEnd. Unload tool. MillChanger.\n");
+            states = UnloadErrorEnd;
+            break;
+
+        default:
+            break;
+        }
+
+        WaitNextTimeSlice();
+    } while (states != UnloadEnd && states != UnloadErrorEnd);
+
+    if (states == UnloadEnd)
+    {
+        return 0;
+    }
+    else
     {
         return 1;
     }
-
-    // - Rapid to current tool position to execute Z move
-	if (MoveXY(ToolPositionX(currentTool), ToolPositionY(currentTool), SLOW_SPEED))
-    {
-        return 1;
-    }
-
-	// - Approach tool holder by matching Z height of tool flange currently in spindle with tool holder                            claw
-	if (MoveZ(ToolPositionZ(), SLOW_SPEED))
-    {
-        return 1;
-    }
-
-    if (!JOB_ACTIVE)
-    {
-        ClearStopImmediately(); // Clear Stop Condition without resuming
-        return 1;  // if Job was terminated/halt exit - return error.
-    }
-
-    // Activate piston actuators to approach tool in z axis.
-    EnablePistons();
-
-    if (!JOB_ACTIVE)
-    {
-        DisablePistons();
-        ClearStopImmediately(); // Clear Stop Condition without resuming
-        return 1;  // if Job was terminated/halt exit - return error.
-    }
-
-    // - Eject tool
-	if (EjectTool())
-    {
-        return 1;
-    }
-
-    if (!JOB_ACTIVE)
-    {
-        ClearStopImmediately(); // Clear Stop Condition without resuming
-        return 1;  // if Job was terminated/halt exit - return error.
-    }
-
-    DisablePistons();
-
-    if (!JOB_ACTIVE)
-    {
-        ClearStopImmediately(); // Clear Stop Condition without resuming
-        return 1;  // if Job was terminated/halt exit - return error.
-    }
-
-    // - Rapid to Z Home
-	if (MoveZ(0.0, SLOW_SPEED))
-    {
-        return 1;
-    }
-
-	return 0; //success
 }
 
-// Load new Tool (Spindle must be empty).
-int LoadNewTool(int newTool)
+// Posible states to load tool cycle
+enum loadStates
 {
-    // - Rapid to Z Home to clear any work that may be on the table
-	if (MoveZ(0.0, SLOW_SPEED))
+    LoadInitial,
+    LoadSafeZBegin,
+    MovePlaneLoadTool,
+    LoadApproachZ,
+    LoadApproachPistons,
+    LoadGrab,
+    LoadRetractPistons,
+    LoadSafeZEnd,
+    LoadEnd,
+    LoadError,
+    LoadErrorEnd
+};
+
+// Load new Tool (Spindle must be empty).
+int LoadNewTool(int newTool, int hasUnloadedTool)
+{
+    enum loadStates states = LoadInitial;
+    printf("Going to LoadInitial. Load new tool. MillChanger.\n");
+    double T0=0.0;  // remember the last time we turned on
+
+    do
+    {
+        double T=Time_sec(); // get current Time_sec
+        
+        if (!JOB_ACTIVE)
+        {
+            printf("Going to LoadError. Load new tool. MillChanger.\n");
+            states = LoadError;
+        }
+
+        switch (states)
+        {
+        case LoadInitial:
+            if (hasUnloadedTool)
+            {
+                printf("Going to MovePlaneLoadTool. Load new tool. MillChanger.\n");
+                states = MovePlaneLoadTool;
+            }
+            else
+            {
+                printf("Going to LoadSafeZBegin. Load new tool. MillChanger.\n");
+                states = LoadSafeZBegin;
+            }
+            break;
+
+        case LoadSafeZBegin:
+            // - Rapid to Z Home to clear any work that may be on the table
+            if (MoveZ(0.0, FAST_SPEED))
+            {
+                printf("Going to LoadError. Load new tool. MillChanger.\n");
+                states = LoadError;
+                break;
+            }
+
+            printf("Going to MovePlaneLoadTool. Load new tool. MillChanger.\n");
+            states = MovePlaneLoadTool;
+            break;
+        
+        case MovePlaneLoadTool:
+            // - Rapid to new tool position to execute Z move
+            if (MoveXY(ToolPositionX(newTool), ToolPositionY(newTool), FAST_SPEED))
+            {
+                printf("Going to LoadError. Load new tool. MillChanger.\n");
+                states = LoadError;
+                break;
+            }
+            
+            printf("Going to LoadApproachZ. Load new tool. MillChanger.\n");
+            states = LoadApproachZ;
+            break;
+
+        case LoadApproachZ:
+            // Does not approach in the magazine if not is not opened
+            if (!ReadBit(MAGAZINE_OPENED_INPUT))
+            {
+                break;
+            }
+
+            if (MoveZ(ToolPositionZ(), FAST_SPEED))
+            {
+                printf("Going to LoadError. Load new tool. MillChanger.\n");
+                states = LoadError;
+                break;
+            }
+
+            if (hasUnloadedTool)
+            {
+                printf("Going to LoadGrab. Load new tool. MillChanger.\n");
+                states = LoadGrab;
+            }
+            else
+            {
+                printf("Going to LoadApproachPistons. Load new tool. MillChanger.\n");
+                states = LoadApproachPistons;
+            }
+            break;
+
+        case LoadApproachPistons:
+            // Activate piston actuators to approach tool in z axis.
+            SetBit(PISTONS_ENABLE_OUTPUT);
+            SetBit(PISTONL_ENABLE_OUTPUT);
+            if (T > T0 + 2.0)
+            {
+                T0 = 0.0;
+                printf("Going to LoadGrab. Load new tool. MillChanger.\n");
+                states = LoadGrab;
+            }
+            break;
+
+        case LoadGrab:
+            if (GrabTool())
+            {
+                printf("Going to LoadError. Load new tool. MillChanger.\n");
+                states = LoadError;
+                break;
+            }
+
+            printf("Going to LoadRetractPistons. Load new tool. MillChanger.\n");
+            states = LoadRetractPistons;
+            break;
+
+        case LoadRetractPistons:
+            // Activate piston actuators to approach tool in z axis.
+            ClearBit(PISTONS_ENABLE_OUTPUT);
+            ClearBit(PISTONL_ENABLE_OUTPUT);
+            printf("Going to LoadSafeZEnd. Load new tool. MillChanger.\n");
+            states = LoadSafeZEnd;
+            break;
+
+        case LoadSafeZEnd:
+            // - Rapid to Z Home
+            if (MoveZ(0.0, FAST_SPEED))
+            {
+                printf("Going to LoadError. Load new tool. MillChanger.\n");
+                states = LoadError;
+                break;
+            }
+
+            printf("Going to LoadEnd. Load new tool. MillChanger.\n");
+            states = LoadEnd;
+            break;
+
+        case LoadError:
+            ClearStopImmediately(); // Clear Stop Condition without resuming
+            ClearBit(PISTONS_ENABLE_OUTPUT);
+            ClearBit(PISTONL_ENABLE_OUTPUT);
+            printf("Going to LoadErrorEnd. Load new tool. MillChanger.\n");
+            states = LoadErrorEnd;
+            break;
+
+        default:
+            break;
+        }
+
+        WaitNextTimeSlice();
+    } while (states != LoadEnd && states != LoadErrorEnd);
+
+    if (states == LoadEnd)
+    {
+        return 0;
+    }
+    else
     {
         return 1;
     }
-
-    // - Rapid to new tool position to execute Z move
-	if (MoveXY(ToolPositionX(newTool), ToolPositionY(newTool), SLOW_SPEED))
-    {
-        return 1;
-    }
-
-    if (MoveZ(ToolPositionZ(), SLOW_SPEED))
-    {
-        return 1;
-    }
-
-    if (!JOB_ACTIVE)
-    {
-        ClearStopImmediately(); // Clear Stop Condition without resuming
-        return 1;  // if Job was terminated/halt exit - return error.
-    }
-    
-    // Activate piston actuators to approach tool in z axis.
-    EnablePistons();
-
-    if (!JOB_ACTIVE)
-    {
-        ClearStopImmediately(); // Clear Stop Condition without resuming
-        DisablePistons();
-        return 1;  // if Job was terminated/halt exit - return error.
-    }
-
-    // - Grab tool
-	if (GrabTool())
-    {
-        return 1;
-    }
-
-    if (!JOB_ACTIVE)
-    {
-        ClearStopImmediately(); // Clear Stop Condition without resuming
-        return 1;  // if Job was terminated/halt exit - return error.
-    }
-    
-    DisablePistons();
-
-    if (!JOB_ACTIVE)
-    {
-        ClearStopImmediately(); // Clear Stop Condition without resuming
-        return 1;  // if Job was terminated/halt exit - return error.
-    }
-
-    // - Rapid to Z Home
-	if (MoveZ(0.0, SLOW_SPEED))
-    {
-        return 1;
-    }
-
-	return 0; //success
 }
 
 // Return x position of tool holder as a function of the tool in mm.
@@ -468,18 +614,18 @@ void DisablePistons()
 int EjectTool()
 {
     SetBit(SPHERE_GRIPPER_OUTPUT);
-    Delay_sec(1.0);
+    Delay_sec(0.5);
     SetBit(OPEN_TOOL_GRIPPER_OUTPUT);
     Delay_sec(0.5);
     SetBit(EXTRACT_OUTPUT);
-    Delay_sec(1.0);
+    Delay_sec(0.5);
     ClearBit(EXTRACT_OUTPUT);
     SetBit(PISTON_TOOL_OUTPUT);
-    Delay_sec(2.0);
+    while (!ReadBit(PISTON_TOOL_ON_INPUT));
     ClearBit(SPHERE_GRIPPER_OUTPUT);
 
     // - Wait for time in seconds defined by CLAMP_TIME
-	Delay_sec(1.0);
+	Delay_sec(0.5);
 
     // - Read TOOL_PRESENT_INPUT bit to see whether the tool is loose, to make a safe Z move without  
     //      destroying tool holder
@@ -495,9 +641,9 @@ int EjectTool()
     SaveCurrentTool(-1);
   
     ClearBit(PISTON_TOOL_OUTPUT);
-    Delay_sec(2.0);
+    while (!ReadBit(PISTON_TOOL_OFF_INPUT));
     ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
-    Delay_sec(1.0);
+    Delay_sec(0.5);
 
     return 0; // success
 }
@@ -508,17 +654,17 @@ int GrabTool()
 {
     SetBit(OPEN_TOOL_GRIPPER_OUTPUT);
     SetBit(PISTON_TOOL_OUTPUT);
-    Delay_sec(2.0);
+    while (!ReadBit(PISTON_TOOL_ON_INPUT));
     SetBit(SPHERE_GRIPPER_OUTPUT);
     Delay_sec(0.5);
     ClearBit(PISTON_TOOL_OUTPUT);
-    Delay_sec(2.0);
+    while (!ReadBit(PISTON_TOOL_OFF_INPUT));
     ClearBit(OPEN_TOOL_GRIPPER_OUTPUT);
-    Delay_sec(1.0);
+    Delay_sec(0.5);
     ClearBit(SPHERE_GRIPPER_OUTPUT);
 
     // - Wait for time in seconds defined by CLAMP_TIME
-	Delay_sec(1.0);
+	Delay_sec(0.5);
 
     // - Read TOOL_PRESENT_INPUT bit to see whether the tool is loose, to make a safe Z move without  
     //      destroying tool holder

@@ -1,6 +1,7 @@
 #include "KMotionDef.h"
 #include "Spindle.c"
 #include "Drill.c"
+#include "Saw.c"
 
 // Routine to be executed when M3 is called in a G program.
 main()
@@ -9,8 +10,35 @@ main()
     if (GetDrillBoxStatus() == 1)
     {
         StopSpindle();
+        ClearSawOutputs();
         SetBit(DRILL_MOTOR_OUTPUT);
         return; 
+    }
+
+    // Turn on saw if it is setted
+    if (GetSawStatus() > 0)
+    {
+        StopSpindle();
+        ClearDrillOutputs();
+
+        if (GetSawStatus() == 1)
+        {
+            SetBit(SAW_X_OUTPUT);
+            while (!ReadBit(SAW_X_CONFIRMATION_INPUT))
+            {
+                WaitNextTimeSlice();
+            }
+        }
+        else if (GetSawStatus() == 2)
+        {
+            SetBit(SAW_Y_OUTPUT);
+            while (!ReadBit(SAW_Y_CONFIRMATION_INPUT))
+            {
+                WaitNextTimeSlice();
+            }
+        }
+
+        return;
     }
 
     // Turn off enable CCW

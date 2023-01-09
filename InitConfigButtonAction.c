@@ -8,6 +8,7 @@
 #include "Spindle.c"
 #include "MillChanger.c"
 #include "TableSelectionWatch.c"
+#include "Magazine.c"
 
 // Initialization program that runs when the Init button is pressed inside KMotionCNC
 // It initializes the boards, monitors alarms and listen to the IOs of the machine
@@ -40,6 +41,7 @@ main()
         Table1SelectionWatch();
         Table2SelectionWatch();
         Table1And2SelectionWatch();
+        MagazineWatch();
         
         WaitNextTimeSlice();
     }

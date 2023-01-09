@@ -7,7 +7,9 @@
 
 #include "Drill.c"
 #include "MillChanger.c"
+#include "Magazine.c"
 #include "Spindle.c"
+#include "Saw.c"
 
 #define TOOL_VAR 9
 
@@ -23,6 +25,11 @@ int main ()
     if (GetDrillBoxStatus() == 1)
     {
         ClearDrillOutputs();
+    }
+
+    if (GetSawStatus() > 0)
+    {
+        ClearSawOutputs();
     }
 
     // Turn off spindle if it is on.
@@ -43,6 +50,10 @@ int main ()
     else if (slot >= DRILL_BOX_SLOT_MIN && slot <= DRILL_BOX_SLOT_MAX)
     {
         DrillRoutine(slot);
+    }
+    else if (slot == SAW_X_SLOT || slot == SAW_Y_SLOT)
+    {
+        SawRoutine(slot);
     }
     else
     {
